@@ -1,0 +1,50 @@
+## Dockerfile
+FROM ubuntu:16.04
+MAINTAINER Amanda Cooksey	
+LABEL Description="AgBase GOanna tool"
+
+# Install all the updates and download dependencies
+RUN apt-get update && \
+    apt-get install -y \
+    git \
+    wget \
+    bzip2
+
+RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
+    wget --quiet https://repo.continuum.io/miniconda/Miniconda2-4.0.5-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh
+
+RUN mkdir /data /config
+
+# give write permissions to conda folder
+RUN chmod 777 -R /opt/conda/
+
+ENV PATH=$PATH:/opt/conda/bin
+
+RUN conda config --add channels r
+RUN conda config --add channels bioconda
+
+RUN conda upgrade conda
+
+# add blast 2.7.1--i added this
+RUN conda install -c conda-forge -c bioconda blast==2.7.1
+
+ENV PATH /masterscript.sh/:$PATH
+
+# add masterscript--i added this
+ADD masterscript.sh /usr/bin
+
+ADD splitB.pl /usr/bin
+
+ADD cyverse_blast2GO.pl /usr/bin
+
+# Change the permissions and the path for the wrapper script
+RUN chmod +x /usr/bin/masterscript.sh
+
+VOLUME ["/data", "/config"]
+
+# Entrypoint
+ENTRYPOINT ["/usr/bin/masterscript.sh"]
+
+
