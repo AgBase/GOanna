@@ -12,13 +12,13 @@ do
                 b) experimental=${OPTARG};;
                 c) transcript_peps=${OPTARG};;
                # d) out_fmt=${OPTARG};;
-                e) max_matches=${OPTARG};;
-                f) E_value=${OPTARG};;
+                f) max_matches=${OPTARG};;
+                e) E_value=${OPTARG};;
                 g) percID=${OPTARG};;
                # h) help=${OPTARG};; ADD USAGE STATEMENT
 		m) perc_pos=${OPTARG};;
 		o) out=${OPTARG};;
-		j) bitscore=${OPTARG};;
+		d) bitscore=${OPTARG};;
                 k) gap_Open=${OPTARG};;
                 l) gap_Extend=${OPTARG};;
                 q) qcovs=${OPTARG};;
@@ -67,11 +67,11 @@ Dbase="$name"'.fa'
 #blastp -query $trans_peps -db $name -out $out.asn -outfmt 11 $ARGS
 
 ##Blast_formatter will format stand-alone searches performed with an earlier version of a database if both the search and formatting databases are prepared so that fetching by sequence ID is possible. To enable fetching by sequence ID use the –parse_seqids flag when running makeblastdb, 
-blast_formatter -archive $out.asn -out $out.html -outfmt 1 -html
+#blast_formatter -archive $out.asn -out $out.html -outfmt 1 -html
 #IF WE WANT QUERY AND SUBJECT LENGTH WE WILL HAVE TO CALCULATE AND ADD THEM TO THE OUTPUT?
 #ALSO SEE WHERE WE CAN PULL PROTEIN NAME FROM--GOA COLUMN 10
 #NEED TO FIGURE OUT HOW TO ADD STAXIDS--BLAST CAN'T PULL IT DIRECTLY BECAUSE IT ISN'T IN THE DATABASES
-blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score'
+#blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score'
 
 ##WANT THESE
 ##1. html - shows the alignments
@@ -80,8 +80,8 @@ blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend ss
 ##4. GAF-like output (pull slim input from here)
 
 #################################################################################################################
-##ADD FILTERING BASED ON QCOVS (& % ID & EVAL & PPOS & GAPOPEN & GAPEXT & BITSCORE & RAWSCORE
-#awk -v x=$percID -v y=$qcovs '{ if(($3 > x) && ($13 > y)) { print }}' $out.tsv > tmp.tsv
+##ADD FILTERING BASED ON QCOVS (& % ID & PPOS & BITSCORE & RAWSCORE)
+awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore -v u=$rawscore '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w) &&  ($14 > u)) { print }}' $out.tsv > tmp.tsv
 
 ##APPEND HEADER LINE TO TSV
 #echo -e "qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqcovs" | cat - tmp.tsv > temp && mv temp $out.tsv
@@ -110,7 +110,6 @@ blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend ss
 ##PULL NECESSARY COLUMNS FOR OUTPUT FILE
 #NEED TO DOUBLE CHECK THESE COLUMN NUMBERS
 #CURRENT AGBASE GAF-ISH OUTPUT
-#Query_ID,Query_Seq_length,Query_Align_Start,Query_Align_End,Hit_ID,Hit_Protein_Name,Hit_Taxon_ID,Hit_Taxon_Name,Hit_Seq_Length,Hit_Align_Start,Hit_Align_End,Alignment_Length,Evalue,Pct_Identity,Query_Coverage,Query_Coverage_Per_HSP,Pct_Positive_Scoring_Matches,Number_of_positive_scoring_matches,Nbr_Identical_Matches,Nbr_Mismatches,Number_of_Gap_Openings,Total_Number_of_Gaps,Bit_Score,Raw_Score
 #WILL NEED TO ADD MANY OUTPUTS FROM BLAST TO TSV TO GET THIS FORMAT
 #DO WE WANT MORE GAF-ISH OUTPUT IN ADDITION TO THIS--THIS CUT STATEMENT JUST PULLS LINES FROM GOA--doesn't actually do anything
 #cut -f2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17 goa_entries.txt | sort - > goa_entries.srt.txt
