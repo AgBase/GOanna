@@ -80,8 +80,14 @@ Dbase="$name"'.fa'
 ##4. GAF-like output (pull slim input from here)
 
 #################################################################################################################
-##ADD FILTERING BASED ON QCOVS (& % ID & PPOS & BITSCORE & RAWSCORE)
-awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore -v u=$rawscore '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w) &&  ($14 > u)) { print }}' $out.tsv > tmp.tsv
+##ADD FILTERING BASED ON QCOVS (& % ID & PPOS & BITSCORE)
+awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w)) { print }}' $out.tsv > tmp.tsv
+
+##CALCULATE/PULL EXTRA COLUMNS AND ADD THEM HERE
+#FOREACH LINE
+#SUBTRACT $3 - $2 = QLEN
+#SUBTRACT $6 - $5 = SLEN
+
 
 ##APPEND HEADER LINE TO TSV
 #echo -e "qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqcovs" | cat - tmp.tsv > temp && mv temp $out.tsv
