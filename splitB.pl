@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 
-use warnings;
-
 # splitA.pl Part of ExView1 Pipeline, Roger Barthelson
 
 $pslfile = $ARGV[0];

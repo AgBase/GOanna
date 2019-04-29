@@ -68,10 +68,9 @@ Dbase="$name"'.fa'
 
 ##Blast_formatter will format stand-alone searches performed with an earlier version of a database if both the search and formatting databases are prepared so that fetching by sequence ID is possible. To enable fetching by sequence ID use the –parse_seqids flag when running makeblastdb, 
 #blast_formatter -archive $out.asn -out $out.html -outfmt 1 -html
-#IF WE WANT QUERY AND SUBJECT LENGTH WE WILL HAVE TO CALCULATE AND ADD THEM TO THE OUTPUT?
 #ALSO SEE WHERE WE CAN PULL PROTEIN NAME FROM--GOA COLUMN 10
 #NEED TO FIGURE OUT HOW TO ADD STAXIDS--BLAST CAN'T PULL IT DIRECTLY BECAUSE IT ISN'T IN THE DATABASES
-blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score'
+#blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score'
 
 ##WANT THESE
 ##1. html - shows the alignments
@@ -81,15 +80,13 @@ blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend ss
 
 #################################################################################################################
 ##ADD FILTERING BASED ON QCOVS (& % ID & PPOS & BITSCORE)
-awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w)) { print }}' $out.tsv > tmp.tsv
+#awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w)) { print }}' $out.tsv > tmp.tsv
 
 ##CALCULATE EXTRA COLUMNS AND ADD THEM TO OUTPUT
-awk 'BEGIN { OFS = "\t" } {print $1, $3-$2, $2, $3, $4, $6-$5, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14}' tmp.tsv > tmp2.tsv
+#awk 'BEGIN { OFS = "\t" } {print $1, $3-$2, $2, $3, $4, $6-$5, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14}' tmp.tsv > tmp2.tsv
 
 ##APPEND HEADER LINE TO TSV
-#echo -e "qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqcovs" | cat - tmp.tsv > temp && mv temp $out.tsv
-#THIS IS THE MORE RECENT OUTPUT VERSION SO THAT WE CAN GET THE RELEVANT INFO INTO THE FINAL OUTPUT
-echo -e "Query_ID\tQuery_length\tQuery_start\tQuery_end\tSubject_ID\tSubject_length\tSubject_start\tSubject_end\tE_value\tPercent_ID\tQuery_coverage\tPercent_positive_ID\tGap_openings\tTotal_gaps\tBitscore\tRaw_score" | cat - tmp2.tsv > temp && mv temp $out.tsv
+#echo -e "Query_ID\tQuery_length\tQuery_start\tQuery_end\tSubject_ID\tSubject_length\tSubject_start\tSubject_end\tE_value\tPercent_ID\tQuery_coverage\tPercent_positive_ID\tGap_openings\tTotal_gaps\tBitscore\tRaw_score" | cat - tmp2.tsv > temp && mv temp $out.tsv
 
 ##################################################################################################################
 #script to transfer GOA info from gene_association.goa_uniprot file for the agbase uniprot entries -- maintained in the Data Store for public access
@@ -97,25 +94,38 @@ echo -e "Query_ID\tQuery_length\tQuery_start\tQuery_end\tSubject_ID\tSubject_len
 ##PULL BLAST IDS FROM BLAST OUTPUT TSV
 
 ##THIS LINE IS CLOSE BUT STILL DOESN'T HANDLE HEADER QUITE RIGHT--MAY WORK RIGHT NOW
-#tail --lines=+2 $out.tsv | awk -F "\t" '{print $2}' > "blastids.txt"
+tail --lines=+2 $out.tsv | awk -F "\t" '{print $5}' > "blastids.txt"
 
-#sed -i 's/_.*//'  blastids.txt ##THIS MAY NOT ALWAYS BE NECESSARY--EVER?
+sed -i 's/_.*//'  blastids.txt ##THIS MAY NOT ALWAYS BE NECESSARY--EVER?
 
-#mkdir "splitgoa"
+if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
-#if [[ "$experimental" = "yes" ]]; then splitB.pl  "go_info/gene_association_exponly.goa_uniprot" "splitgoa"; else splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"; fi
+if [[ "$experimental" = "yes" ]]; then splitB.pl  "go_info/gene_association_exponly.goa_uniprot" "splitgoa"; else splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"; fi
 
 ##MERGE GOA INFO INTO BLAST RESULTS
-#cyverse_blast2GO.pl "blastids.txt" "splitgoa"
+cyverse_blast2GO.pl "blastids.txt" "splitgoa"
 
 
 ##PULL NECESSARY COLUMNS FOR OUTPUT FILE
-#NEED TO DOUBLE CHECK THESE COLUMN NUMBERS
-#CURRENT AGBASE GAF-ISH OUTPUT
-#WILL NEED TO ADD MANY OUTPUTS FROM BLAST TO TSV TO GET THIS FORMAT
-#DO WE WANT MORE GAF-ISH OUTPUT IN ADDITION TO THIS--THIS CUT STATEMENT JUST PULLS LINES FROM GOA--doesn't actually do anything
-#cut -f2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17 goa_entries.txt | sort - > goa_entries.srt.txt
+#NEED THESE COLUMNS:
+#DB (of object--default to user_input)
+#DB OBJECT = QUERY ID
+#DB OBJECT SYMBOL =REPEAT DB OBJECT IF CAN'T GET SYMBOL
+#QUALIFIER = MUST BE EMPTY BUT WE NEED TO HAVE THE EMPTY COLUMN
+#GO ID = PULL FROM GOA GAF COLUMN 5
+#DB:ref = ALWAYS USE GO_REF:0000024
+#EVIDENCE CODE = ALWAYS USE ECO:0000247
+#WITH OR FROM = UNIPROT:SUBJECT ID
+#ASPECT = PULL FROM GOA COLUMN 9
+#DB OBJECT NAME = EVERYTHING FROM QUERY FASTA HEADER
+#DB OBJECT SYNONYM = EMPTY BUT NEED TO HAVE THE EMPTY COLUMN
+#DB OBJECT TYPE = PROTEIN
+#TAXON = TAXON ID OF QUERY (TAXON:####)--WILL BE USER INPUT?
+#DATE = YYYYMMDD
+#ASSIGNED BY = USER INPUT (DEFAULT TO 'USER INPUT')--OR MAKE IT REQUIRED
+#ANNOTATION EXTENSION = PULL FROM GOA FILE COLUMN 16
+#GENE PRODUCT FORM ID = EMPTY BUT NEED TO HAVE THE EMPTY COLUMN
 
 ##PULL COLUMNS FOR GO SLIM FILE
 
