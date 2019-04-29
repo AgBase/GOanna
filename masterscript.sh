@@ -71,7 +71,7 @@ Dbase="$name"'.fa'
 #IF WE WANT QUERY AND SUBJECT LENGTH WE WILL HAVE TO CALCULATE AND ADD THEM TO THE OUTPUT?
 #ALSO SEE WHERE WE CAN PULL PROTEIN NAME FROM--GOA COLUMN 10
 #NEED TO FIGURE OUT HOW TO ADD STAXIDS--BLAST CAN'T PULL IT DIRECTLY BECAUSE IT ISN'T IN THE DATABASES
-#blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score'
+blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score'
 
 ##WANT THESE
 ##1. html - shows the alignments
@@ -83,26 +83,23 @@ Dbase="$name"'.fa'
 ##ADD FILTERING BASED ON QCOVS (& % ID & PPOS & BITSCORE)
 awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w)) { print }}' $out.tsv > tmp.tsv
 
-##CALCULATE/PULL EXTRA COLUMNS AND ADD THEM HERE
-#FOREACH LINE
-#SUBTRACT $3 - $2 = QLEN
-#SUBTRACT $6 - $5 = SLEN
-
+##CALCULATE EXTRA COLUMNS AND ADD THEM TO OUTPUT
+awk 'BEGIN { OFS = "\t" } {print $1, $3-$2, $2, $3, $4, $6-$5, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14}' tmp.tsv > tmp2.tsv
 
 ##APPEND HEADER LINE TO TSV
 #echo -e "qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqcovs" | cat - tmp.tsv > temp && mv temp $out.tsv
-#THIS IS THE MORE RECENT OUTPUT VERSION SO THAT WE CAN GET THE RELEVANT INFO INTO THE FINAL OUTPUT--STILL NEEDS QUERY LENGTH AND SUBJECT LENGTH IF THOSE ARE REALLY NECESSARY--MUST BE CALCULATED
-#echo -e "qseqid\tqstart\tqend\tsseqid\tstaxids\tsstart\tsend\tlength\tevalue\tpident\tqcovs\tqcovhsp\tppos\tpositive\tnident\tmismatch\tgapopen\tgaps\tbitscore\tscore" | cat - tmp.tsv > temp && mv temp $out.tsv
+#THIS IS THE MORE RECENT OUTPUT VERSION SO THAT WE CAN GET THE RELEVANT INFO INTO THE FINAL OUTPUT
+echo -e "Query_ID\tQuery_length\tQuery_start\tQuery_end\tSubject_ID\tSubject_length\tSubject_start\tSubject_end\tE_value\tPercent_ID\tQuery_coverage\tPercent_positive_ID\tGap_openings\tTotal_gaps\tBitscore\tRaw_score" | cat - tmp2.tsv > temp && mv temp $out.tsv
 
 ##################################################################################################################
 #script to transfer GOA info from gene_association.goa_uniprot file for the agbase uniprot entries -- maintained in the Data Store for public access
 
 ##PULL BLAST IDS FROM BLAST OUTPUT TSV
 
-##THIS LINE IS CLOSE BUT STILL DOESN'T HANDLE HEADER QUITE RIGHT
+##THIS LINE IS CLOSE BUT STILL DOESN'T HANDLE HEADER QUITE RIGHT--MAY WORK RIGHT NOW
 #tail --lines=+2 $out.tsv | awk -F "\t" '{print $2}' > "blastids.txt"
 
-#sed -i 's/_.*//'  blastids.txt
+#sed -i 's/_.*//'  blastids.txt ##THIS MAY NOT ALWAYS BE NECESSARY--EVER?
 
 #mkdir "splitgoa"
 
