@@ -94,17 +94,18 @@ Dbase="$name"'.fa'
 ##PULL BLAST IDS FROM BLAST OUTPUT TSV
 
 ##THIS LINE IS CLOSE BUT STILL DOESN'T HANDLE HEADER QUITE RIGHT--MAY WORK RIGHT NOW
-tail --lines=+2 $out.tsv | awk -F "\t" '{print $5}' > "blastids.txt"
+tail --lines=+2 $out.tsv | awk -F "\t" '{print $1, $5}' > "blstmp.txt"
 
-sed -i 's/_.*//'  blastids.txt ##THIS MAY NOT ALWAYS BE NECESSARY--EVER?
+#sed -i 's/_.*//'  blastids.txt ##NEEDS TO APPLY TO COL 5 BUT NOT COL 1
+awk 'BEGIN {OFS = "\t"} {sub(/_.*/, "", $2); print $1, $2}'  blstmp.txt > blastids.txt
 
 if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
-if [[ "$experimental" = "yes" ]]; then splitB.pl  "go_info/gene_association_exponly.goa_uniprot" "splitgoa"; else splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"; fi
+#if [[ "$experimental" = "yes" ]]; then splitB.pl  "go_info/gene_association_exponly.goa_uniprot" "splitgoa"; else splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"; fi
 
 ##MERGE GOA INFO INTO BLAST RESULTS
-cyverse_blast2GO.pl "blastids.txt" "splitgoa"
+#cyverse_blast2GO.pl "blastids.txt" "splitgoa"
 
 
 ##PULL NECESSARY COLUMNS FOR OUTPUT FILE
