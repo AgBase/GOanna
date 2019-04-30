@@ -11,7 +11,7 @@ do
                 a) database=${OPTARG};;
                 b) experimental=${OPTARG};;
                 c) transcript_peps=${OPTARG};;
-               # d) out_fmt=${OPTARG};;
+                d) gaf_db=${OPTARG};;
                 f) max_matches=${OPTARG};;
                 e) E_value=${OPTARG};;
                 g) percID=${OPTARG};;
@@ -19,11 +19,12 @@ do
 		m) perc_pos=${OPTARG};;
 		o) out=${OPTARG};;
 		d) bitscore=${OPTARG};;
-                k) gap_Open=${OPTARG};;
-                l) gap_Extend=${OPTARG};;
+                k) gapopen=${OPTARG};;
+                l) gaps=${OPTARG};;
                 q) qcovs=${OPTARG};;
 		t) num_threads=${OPTARG};;
-		u) rawscore=${OPTARG};;
+		u) assignedby=${OPTARG};;
+		x) gaf_taxid=${OPTARG};;
         esac
 done
 
@@ -34,18 +35,13 @@ experimental="${experimental}"
 transcript_peps="${transcript_peps}"
 trans_peps=$(basename "${transcript_peps}")
 
-#IF STATEMENTS EXIST FOR EACH OPTIONAL PARAMETER
+#IF STATEMENTS EXIST FOR EACH OPTIONAL BLAST PARAMETER
 if [ -n "${perc_pos}" ]; then ARGS="$ARGS -ppos $perc_pos"; fi
 if [ -n "${E_value}" ]; then ARGS="$ARGS -eval $E_value"; fi
 if [ -n "${percID}" ]; then ARGS="$ARGS -pident $percID"; fi
-#if [ -n "${out}" ]; then ARGS="$ARGS -out $out"; fi
-if [ -n "${gap_Open}" ]; then ARGS="$ARGS -gapopen $gap_Open"; fi
-if [ -n "${gap_Extend}" ]; then ARGS="$ARGS -gapextend $gap_Extend"; fi
 if [ -n "${max_matches}" ]; then ARGS="$ARGS -max_target_seqs $max_matches"; fi
 if [ -n "${bitscore}" ]; then ARGS="$ARGS -bitscore $bitscore"; fi
-if [ -n "${rawscore}" ]; then ARGS="$ARGS -score $rawscore"; fi
 if [ -n "${num_threads}" ]; then ARGS="$ARGS -num_threads $num_threads"; else ARGS="$ARGS -num_threads 4"; fi
-
 ######################################################################################################
 ##CHOOSE BLAST DATABASE BASED ON WHETHER WE WANT EXPERIMENTAL ONLY OR ALL EVIDENCE CODES
 ##NEED TO FILTER BLAST DB FOR EXPONLY--RUN BLAST AGAINST ALL THEN FILTER GOA INFO FOR EXPONLY
@@ -79,8 +75,8 @@ Dbase="$name"'.fa'
 ##4. GAF-like output (pull slim input from here)
 
 #################################################################################################################
-##ADD FILTERING BASED ON QCOVS (& % ID & PPOS & BITSCORE)
-#awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w)) { print }}' $out.tsv > tmp.tsv
+##ADD FILTERING BASED ON QCOVS (& % ID & PPOS & BITSCORE & GAPS & GAPOPEN)
+#awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore -v v=$gaps -v u=$gapopen '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w) && ($12 < v) && ($11 < u)) { print }}' $out.tsv > tmp.tsv
 
 ##CALCULATE EXTRA COLUMNS AND ADD THEM TO OUTPUT
 #awk 'BEGIN { OFS = "\t" } {print $1, $3-$2, $2, $3, $4, $6-$5, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14}' tmp.tsv > tmp2.tsv
@@ -94,12 +90,12 @@ Dbase="$name"'.fa'
 ##PULL BLAST IDS FROM BLAST OUTPUT TSV
 
 ##THIS LINE IS CLOSE BUT STILL DOESN'T HANDLE HEADER QUITE RIGHT--MAY WORK RIGHT NOW
-tail --lines=+2 $out.tsv | awk -F "\t" '{print $1, $5}' > "blstmp.txt"
+#tail --lines=+2 $out.tsv | awk -F "\t" '{print $1, $5}' > "blstmp.txt"
 
-#sed -i 's/_.*//'  blastids.txt ##NEEDS TO APPLY TO COL 5 BUT NOT COL 1
-awk 'BEGIN {OFS = "\t"} {sub(/_.*/, "", $2); print $1, $2}'  blstmp.txt > blastids.txt
+#sed -i 's/_.*//'  blastids.txt ##NEEDS TO APPLY TO COL 5 BUT NOT COL 1; AWK GETS BOTH QUERY ID AND BLAST HIT IN THE SAME BLASTID FILE SO THEY ARE RELATED
+#awk 'BEGIN {OFS = "\t"} {sub(/_.*/, "", $2); print $1, $2}'  blstmp.txt > blastids.txt
 
-if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
+#if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 #if [[ "$experimental" = "yes" ]]; then splitB.pl  "go_info/gene_association_exponly.goa_uniprot" "splitgoa"; else splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"; fi
@@ -110,23 +106,51 @@ if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
 ##PULL NECESSARY COLUMNS FOR OUTPUT FILE
 #NEED THESE COLUMNS:
-#DB (of object--default to user_input)
-#DB OBJECT = QUERY ID
-#DB OBJECT SYMBOL =REPEAT DB OBJECT IF CAN'T GET SYMBOL
-#QUALIFIER = MUST BE EMPTY BUT WE NEED TO HAVE THE EMPTY COLUMN
-#GO ID = PULL FROM GOA GAF COLUMN 5
-#DB:ref = ALWAYS USE GO_REF:0000024
-#EVIDENCE CODE = ALWAYS USE ECO:0000247
-#WITH OR FROM = UNIPROT:SUBJECT ID
-#ASPECT = PULL FROM GOA COLUMN 9
-#DB OBJECT NAME = EVERYTHING FROM QUERY FASTA HEADER
-#DB OBJECT SYNONYM = EMPTY BUT NEED TO HAVE THE EMPTY COLUMN
-#DB OBJECT TYPE = PROTEIN
-#TAXON = TAXON ID OF QUERY (TAXON:####)--WILL BE USER INPUT?
-#DATE = YYYYMMDD
-#ASSIGNED BY = USER INPUT (DEFAULT TO 'USER INPUT')--OR MAKE IT REQUIRED
-#ANNOTATION EXTENSION = PULL FROM GOA FILE COLUMN 16
-#GENE PRODUCT FORM ID = EMPTY BUT NEED TO HAVE THE EMPTY COLUMN
+#col1 DB (of object--default to user_input)
+#col2 DB OBJECT = QUERY ID
+#col3 DB OBJECT SYMBOL =REPEAT DB OBJECT IF CAN'T GET SYMBOL
+#col4 QUALIFIER = MUST BE EMPTY BUT WE NEED TO HAVE THE EMPTY COLUMN
+#col5 GO ID = PULL FROM GOA GAF COLUMN 5
+#col6 DB:ref = ALWAYS USE GO_REF:0000024
+#col7 EVIDENCE CODE = ALWAYS USE ECO:0000247
+#col8 WITH OR FROM = UNIPROT:SUBJECT ID
+#col9 ASPECT = PULL FROM GOA COLUMN 9
+#col10 DB OBJECT NAME = EVERYTHING FROM QUERY FASTA HEADER
+#col11 DB OBJECT SYNONYM = EMPTY BUT NEED TO HAVE THE EMPTY COLUMN
+#col12 DB OBJECT TYPE = PROTEIN
+#col13 TAXON = TAXON ID OF QUERY (TAXON:####)--WILL BE USER INPUT?
+#col14 DATE = YYYYMMDD
+#col15 ASSIGNED BY = USER INPUT (DEFAULT TO 'USER INPUT')--OR MAKE IT REQUIRED
+#col16 ANNOTATION EXTENSION = PULL FROM GOA FILE COLUMN 16
+#col17 GENE PRODUCT FORM ID = EMPTY BUT NEED TO HAVE THE EMPTY COLUMN
+
+#OUTGAF VARIABLES COUNT FROM 1 TO CORRESPOND TO THE GAF FILE SPEC
+#THESE WILL ALWAYS BE THE SAME AND CAN BE DECLARED OUTSIDE THE LOOP
+#if [ -n "{$gaf_db}" ]; then outgaf1 ="$gaf_db"; else outgaf1 = "user_input_db"; fi
+#if [ -n "{$assignedby}"; then outgaf15 = "$assignedby"; else outgaf15 = "user"; fi
+#if [ -n "{$gaf_taxid}"; then outgaf13 = "Taxon:""$gaf_taxid"; else outgaf13 = "Taxon:0000"
+#outgaf14 = date +%Y%m%d
+#outgaf6 = "GO_REF:0000024"
+#outgaf7 = "ECO:0000247"
+#outgaf12 = "protein"
+#outgaf4 = ""
+#outgaf11 = ""
+#outgaf17 = ""
+
+#THESE WILL BE PULLED FOR EACH LINE AND MUST BE DECLARED INSIDE THE LOOP
+#FOR EACH IN BLASTIDS.TXT
+	#OUTGAF2 = BLASTIDS.TXT $1
+	#OUTGAF3 = BLASTIDS.TXT $1
+	#OUTGAF10 = BLASTIDS.TXT $1
+	#OUTGAF8 = "Uniprot:"BLASTIDS.TXT $2
+	#NEED A MATCHING LINE HERE TO GET FROM BLASTIDS.TXT TO GOA_ENTRIES.TXT
+	#OUTGAF5 = GOA_ENTRIES.TXT $5
+	#OUTGAF9 = GOA_ENTRIES.TXT $9
+	#OUTGAF16 = GOA_ENTRIES.TXT $16
+#CLOSE LOOP AND PRINT TO FILE
+
+#MAY BE ABLE TO USE AWK FOR MULTIPLE FILES LIKE SO:
+awk 'BEGIN {OFS = "\t"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' blastids.txt goa_entries.txt > gocombo_tmp.txt
 
 ##PULL COLUMNS FOR GO SLIM FILE
 
