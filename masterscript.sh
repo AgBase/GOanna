@@ -75,7 +75,7 @@ Dbase="$name"'.fa'
 ##4. GAF-like output (pull slim input from here)
 
 #################################################################################################################
-##ADD FILTERING BASED ON QCOVS (& % ID & PPOS & BITSCORE & GAPS & GAPOPEN)
+##ADD FILTERING BASED ON QCOVS (& %% ID & PPOS & BITSCORE & GAPS & GAPOPEN)
 #awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore -v v=$gaps -v u=$gapopen '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w) && ($12 < v) && ($11 < u)) { print }}' $out.tsv > tmp.tsv
 
 ##CALCULATE EXTRA COLUMNS AND ADD THEM TO OUTPUT
@@ -126,31 +126,33 @@ Dbase="$name"'.fa'
 
 #OUTGAF VARIABLES COUNT FROM 1 TO CORRESPOND TO THE GAF FILE SPEC
 #THESE WILL ALWAYS BE THE SAME AND CAN BE DECLARED OUTSIDE THE LOOP
-#if [ -n "{$gaf_db}" ]; then outgaf1 ="$gaf_db"; else outgaf1 = "user_input_db"; fi
-#if [ -n "{$assignedby}"; then outgaf15 = "$assignedby"; else outgaf15 = "user"; fi
-#if [ -n "{$gaf_taxid}"; then outgaf13 = "Taxon:""$gaf_taxid"; else outgaf13 = "Taxon:0000"
-#outgaf14 = date +%Y%m%d
-#outgaf6 = "GO_REF:0000024"
-#outgaf7 = "ECO:0000247"
-#outgaf12 = "protein"
-#outgaf4 = ""
-#outgaf11 = ""
-#outgaf17 = ""
+if [ "{$gaf_db}" ]; then outgaf1="$gaf_db"; else outgaf1="user_input_db"; fi
+if [ "{$assignedby}" ]; then outgaf15="$assignedby"; else outgaf15="user"; fi
+if [ "{$gaf_taxid}" ]; then outgaf13="Taxon:""$gaf_taxid"; else outgaf13="Taxon:0000"; fi
+echo $outgaf1
+outgaf14=$(date +"%Y%m%d")
+outgaf6="GO_REF:0000024"
+outgaf7="ECO:0000247"
+outgaf12="protein"
+outgaf4=""
+outgaf11=""
+outgaf17=""
 
 #THESE WILL BE PULLED FOR EACH LINE AND MUST BE DECLARED INSIDE THE LOOP
-#FOR EACH IN BLASTIDS.TXT
-	#OUTGAF2 = BLASTIDS.TXT $1
-	#OUTGAF3 = BLASTIDS.TXT $1
-	#OUTGAF10 = BLASTIDS.TXT $1
-	#OUTGAF8 = "Uniprot:"BLASTIDS.TXT $2
-	#NEED A MATCHING LINE HERE TO GET FROM BLASTIDS.TXT TO GOA_ENTRIES.TXT
-	#OUTGAF5 = GOA_ENTRIES.TXT $5
-	#OUTGAF9 = GOA_ENTRIES.TXT $9
-	#OUTGAF16 = GOA_ENTRIES.TXT $16
-#CLOSE LOOP AND PRINT TO FILE
+
+#OUTGAF2 = BLASTIDS.TXT $1
+#OUTGAF3 = BLASTIDS.TXT $1
+#OUTGAF10 = BLASTIDS.TXT $1
+#OUTGAF8 = "Uniprot:"BLASTIDS.TXT $2
+#OUTGAF5 = GOA_ENTRIES.TXT $5
+#OUTGAF9 = GOA_ENTRIES.TXT $9
+#OUTGAF16 = GOA_ENTRIES.TXT $16
+
 
 #MAY BE ABLE TO USE AWK FOR MULTIPLE FILES LIKE SO:
-awk 'BEGIN {OFS = "\t"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' blastids.txt goa_entries.txt > gocombo_tmp.txt
+#awk 'BEGIN {OFS = "\t"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' blastids.txt goa_entries.txt > gocombo_tmp.txt
+awk  -v a="$outgaf1" -v b="$outgaf15" -v c="$outgaf13" -v d="$outgaf14" -v e="$outgaf6" -v f="$outgaf7" -v g="$outgaf12" -v h="$outgaf4" -v i="$outgaf11" -v j="$outgaf17" 'BEGIN {OFS = "\t"}{print a,$1,$1,h,$6,f,"Uniprot:"$3,$10,$1,i,g,c,d,b,$17,j}' gocombo_tmp.txt > goanna_gaf.txt
+#awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore -v v=$gaps -v u=$gapopen '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w) && ($12 < v) && ($11 < u)) { print }}' $out.tsv > tmp.tsv
 
 ##PULL COLUMNS FOR GO SLIM FILE
 
