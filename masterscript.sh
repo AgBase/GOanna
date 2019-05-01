@@ -100,29 +100,9 @@ Dbase="$name"'.fa'
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 #if [[ "$experimental" = "yes" ]]; then splitB.pl  "go_info/gene_association_exponly.goa_uniprot" "splitgoa"; else splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"; fi
 
-##MERGE GOA INFO INTO BLAST RESULTS
+##PULL SUBSET OF GOA LINES THAT MATCHED BLAST RESULTS INTO GOA_ENTRIES
 #cyverse_blast2GO.pl "blastids.txt" "splitgoa"
 
-
-##PULL NECESSARY COLUMNS FOR OUTPUT FILE
-#NEED THESE COLUMNS:
-#col1 DB (of object--default to user_input)
-#col2 DB OBJECT = QUERY ID
-#col3 DB OBJECT SYMBOL =REPEAT DB OBJECT IF CAN'T GET SYMBOL
-#col4 QUALIFIER = MUST BE EMPTY BUT WE NEED TO HAVE THE EMPTY COLUMN
-#col5 GO ID = PULL FROM GOA GAF COLUMN 5
-#col6 DB:ref = ALWAYS USE GO_REF:0000024
-#col7 EVIDENCE CODE = ALWAYS USE ECO:0000247
-#col8 WITH OR FROM = UNIPROT:SUBJECT ID
-#col9 ASPECT = PULL FROM GOA COLUMN 9
-#col10 DB OBJECT NAME = EVERYTHING FROM QUERY FASTA HEADER
-#col11 DB OBJECT SYNONYM = EMPTY BUT NEED TO HAVE THE EMPTY COLUMN
-#col12 DB OBJECT TYPE = PROTEIN
-#col13 TAXON = TAXON ID OF QUERY (TAXON:####)--WILL BE USER INPUT?
-#col14 DATE = YYYYMMDD
-#col15 ASSIGNED BY = USER INPUT (DEFAULT TO 'USER INPUT')--OR MAKE IT REQUIRED
-#col16 ANNOTATION EXTENSION = PULL FROM GOA FILE COLUMN 16
-#col17 GENE PRODUCT FORM ID = EMPTY BUT NEED TO HAVE THE EMPTY COLUMN
 
 #OUTGAF VARIABLES COUNT FROM 1 TO CORRESPOND TO THE GAF FILE SPEC
 #THESE WILL ALWAYS BE THE SAME AND CAN BE DECLARED OUTSIDE THE LOOP
@@ -143,25 +123,17 @@ if [ -n "${gaf_db}" ]; then outgaf1="$gaf_db"; fi
 if [ -n "${assignedby}" ]; then outgaf15="$assignedby"; fi
 if [ -n "${gaf_taxid}" ]; then outgaf13="taxon:""$gaf_taxid"; fi
 
-
-
-#THESE WILL BE PULLED FOR EACH LINE AND MUST BE DECLARED INSIDE THE LOOP
-
-#OUTGAF2 = BLASTIDS.TXT $1
-#OUTGAF3 = BLASTIDS.TXT $1
-#OUTGAF10 = BLASTIDS.TXT $1
-#OUTGAF8 = "UniprotKB:"BLASTIDS.TXT $2
-#OUTGAF5 = GOA_ENTRIES.TXT $5
-#OUTGAF9 = GOA_ENTRIES.TXT $9
-#OUTGAF16 = GOA_ENTRIES.TXT $16
-
-
-
-#MAY BE ABLE TO USE AWK FOR MULTIPLE FILES LIKE SO:
+#PULLING COLUMNS FROM BLASTIDS AND GOA_ENTRIES PRINTING TO NEW COMBINED FILE GOCOMBO; PULL INFO FROM GOCOMBO AND DECLARED VARIABLES ABOVE TO MAKE GAF OUTPUT
 awk 'BEGIN {FS = "\t"}{OFS = "\t"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' blastids.txt goa_entries.txt > gocombo_tmp.txt
 awk  -v a="$outgaf1" -v b="$outgaf15" -v c="$outgaf13" -v d="$outgaf14" -v e="$outgaf6" -v f="$outgaf7" -v g="$outgaf12" -v h="$outgaf4" -v i="$outgaf11" -v j="$outgaf17" -v k="$prefix" 'BEGIN {FS = "\t"}{OFS = "\t"}{print a,$1,$1,h,$6,e,f,(k$3),$10,$1,i,g,c,d,b,$18,j}' gocombo_tmp.txt > goanna_gaf.txt
 
+##APPEND HEADER TO GAF OUTPUT
+sed -i '1 i\!gaf-version: 2.0' goanna_gaf.txt
+
 ##PULL COLUMNS FOR GO SLIM FILE
+awk 'BEGIN {FS ="\t"}{OFS = "\t"} {print $2,$5,$9}' goanna_gaf.txt > slim_input.txt
+
+
 
 ##REMOVE FILES THAT ARE NO LONGER NECESSARY
 #rm gene_association.goa_uniprot
