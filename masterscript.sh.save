@@ -137,7 +137,6 @@ outgaf12="protein"
 outgaf4=""
 outgaf11=""
 outgaf17=""
-prefix="UniprotKB:"
 
 if [ -n "${gaf_db}" ]; then outgaf1="$gaf_db"; fi
 if [ -n "${assignedby}" ]; then outgaf15="$assignedby"; fi
@@ -150,16 +149,15 @@ if [ -n "${gaf_taxid}" ]; then outgaf13="taxon:""$gaf_taxid"; fi
 #OUTGAF2 = BLASTIDS.TXT $1
 #OUTGAF3 = BLASTIDS.TXT $1
 #OUTGAF10 = BLASTIDS.TXT $1
-#OUTGAF8 = "UniprotKB:"BLASTIDS.TXT $2
+#OUTGAF8 = "Uniprot:"BLASTIDS.TXT $2
 #OUTGAF5 = GOA_ENTRIES.TXT $5
 #OUTGAF9 = GOA_ENTRIES.TXT $9
 #OUTGAF16 = GOA_ENTRIES.TXT $16
 
 
-
 #MAY BE ABLE TO USE AWK FOR MULTIPLE FILES LIKE SO:
-awk 'BEGIN {FS = "\t"}{OFS = "\t"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' blastids.txt goa_entries.txt > gocombo_tmp.txt
-awk  -v a="$outgaf1" -v b="$outgaf15" -v c="$outgaf13" -v d="$outgaf14" -v e="$outgaf6" -v f="$outgaf7" -v g="$outgaf12" -v h="$outgaf4" -v i="$outgaf11" -v j="$outgaf17" -v k="$prefix" 'BEGIN {FS = "\t"}{OFS = "\t"}{print a,$1,$1,h,$6,e,f,(k$3),$10,$1,i,g,c,d,b,$18,j}' gocombo_tmp.txt > goanna_gaf.txt
+#awk 'BEGIN {OFS = "\t"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' blastids.txt goa_entries.txt > gocombo_tmp.txt
+awk  -v a="$outgaf1" -v b="$outgaf15" -v c="$outgaf13" -v d="$outgaf14" -v e="$outgaf6" -v f="$outgaf7" -v g="$outgaf12" -v h="$outgaf4" -v i="$outgaf11" -v j="$outgaf17" 'BEGIN {OFS = "\t"}{print a,$1,$1,h,$5,e,f,"Uniprot:"$3,$9,$1,i,g,c,d,b,$17,j}' gocombo_tmp.txt > goanna_gaf.txt
 
 ##PULL COLUMNS FOR GO SLIM FILE
 
