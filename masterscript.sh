@@ -18,7 +18,7 @@ do
                # h) help=${OPTARG};; ADD USAGE STATEMENT
 		m) perc_pos=${OPTARG};;
 		o) out=${OPTARG};;
-		d) bitscore=${OPTARG};;
+		s) bitscore=${OPTARG};;
                 k) gapopen=${OPTARG};;
                 l) gaps=${OPTARG};;
                 q) qcovs=${OPTARG};;
