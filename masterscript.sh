@@ -100,41 +100,40 @@ awk 'BEGIN {OFS = "\t"} {sub(/_.*/, "", $2); print $1, $2}'  blstmp.txt > blasti
 if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
-#if [[ "$experimental" = "yes" ]]; then splitB.pl  "go_info/gene_association_exponly.goa_uniprot" "splitgoa"; else splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"; fi
 if [[ "$experimental" = "no" ]]; then splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"; else splitB.pl  "go_info/gene_association_exponly.goa_uniprot" "splitgoa"; fi
 
 ##PULL SUBSET OF GOA LINES THAT MATCHED BLAST RESULTS INTO GOA_ENTRIES
-#cyverse_blast2GO.pl "blastids.txt" "splitgoa"
+cyverse_blast2GO.pl "blastids.txt" "splitgoa"
 
 
 #OUTGAF VARIABLES COUNT FROM 1 TO CORRESPOND TO THE GAF FILE SPEC
 #THESE WILL ALWAYS BE THE SAME AND CAN BE DECLARED OUTSIDE THE LOOP
 
-#outgaf1="user_input_db"
-#outgaf15="user"
-#outgaf13="taxon:0000"
-#outgaf14=$(date +"%Y%m%d")
-#outgaf6="GO_REF:0000024"
-#outgaf7="ECO:0000247"
-#outgaf12="protein"
-#outgaf4=""
-#outgaf11=""
-#outgaf17=""
+outgaf1="user_input_db"
+outgaf15="user"
+outgaf13="taxon:0000"
+outgaf14=$(date +"%Y%m%d")
+outgaf6="GO_REF:0000024"
+outgaf7="ECO:0000247"
+outgaf12="protein"
+outgaf4=""
+outgaf11=""
+outgaf17=""
 prefix="UniprotKB:"
 
-#if [ -n "${gaf_db}" ]; then outgaf1="$gaf_db"; fi
-#if [ -n "${assignedby}" ]; then outgaf15="$assignedby"; fi
-#if [ -n "${gaf_taxid}" ]; then outgaf13="taxon:""$gaf_taxid"; fi
+if [ -n "${gaf_db}" ]; then outgaf1="$gaf_db"; fi
+if [ -n "${assignedby}" ]; then outgaf15="$assignedby"; fi
+if [ -n "${gaf_taxid}" ]; then outgaf13="taxon:""$gaf_taxid"; fi
 
 #PULLING COLUMNS FROM BLASTIDS AND GOA_ENTRIES PRINTING TO NEW COMBINED FILE GOCOMBO; PULL INFO FROM GOCOMBO AND DECLARED VARIABLES ABOVE TO MAKE GAF OUTPUT
-#awk 'BEGIN {FS = "\t"}{OFS = "\t"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' blastids.txt goa_entries.txt > gocombo_tmp.txt
-#awk  -v a="$outgaf1" -v b="$outgaf15" -v c="$outgaf13" -v d="$outgaf14" -v e="$outgaf6" -v f="$outgaf7" -v g="$outgaf12" -v h="$outgaf4" -v i="$outgaf11" -v j="$outgaf17" -v k="$prefix" 'BEGIN {FS = "\t"}{OFS = "\t"}{print a,$1,$1,h,$6,e,f,(k$3),$10,$1,i,g,c,d,b,$18,j}' gocombo_tmp.txt > goanna_gaf.txt
+awk 'BEGIN {FS = "\t"}{OFS = "\t"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' blastids.txt goa_entries.txt > gocombo_tmp.txt
+awk  -v a="$outgaf1" -v b="$outgaf15" -v c="$outgaf13" -v d="$outgaf14" -v e="$outgaf6" -v f="$outgaf7" -v g="$outgaf12" -v h="$outgaf4" -v i="$outgaf11" -v j="$outgaf17" -v k="$prefix" 'BEGIN {FS = "\t"}{OFS = "\t"}{print a,$1,$1,h,$6,e,f,(k$3),$10,$1,i,g,c,d,b,$18,j}' gocombo_tmp.txt > goanna_gaf.txt
 
 ##APPEND HEADER TO GAF OUTPUT
-#sed -i '1 i\!gaf-version: 2.0' goanna_gaf.txt
+sed -i '1 i\!gaf-version: 2.0' goanna_gaf.txt
 
 ##PULL COLUMNS FOR GO SLIM FILE
-#awk 'BEGIN {FS ="\t"}{OFS = "\t"} {print $2,$5,$9}' goanna_gaf.txt > slim_input.txt
+awk 'BEGIN {FS ="\t"}{OFS = "\t"} {print $2,$5,$9}' goanna_gaf.txt > slim_input.txt
 
 
 

@@ -11,7 +11,7 @@ use Data::Dumper;
   
 my ($blast_hit_filename,$gaf_directory)=@ARGV; 
 
-my $hit_colnum=0;
+my $hit_colnum=1;
 my $gaf_obj_colnum=1;
 my %blast_hits=();
 my %EXP_EVD_CODES = ('EXP' => 1, 'IDA' => 1, 'IPI' => 1, 'IMP' => 1, 'IGI' => 1, 
