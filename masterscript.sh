@@ -43,7 +43,9 @@ if [ -n "${num_threads}" ]; then ARGS="$ARGS -num_threads $num_threads"; else AR
 ##CHOOSE BLAST DATABASE BASED ON WHETHER WE WANT EXPERIMENTAL ONLY OR ALL EVIDENCE CODES
 ##NEED TO FILTER BLAST DB FOR EXPONLY--RUN BLAST AGAINST ALL THEN FILTER GOA INFO FOR EXPONLY
 
+
 if [[ "$experimental" = "yes" ]]; then database="$database"'_exponly'; fi
+if [ -z "$experimental" ]; then database="$database"'_exponly'; fi
 name="$database"
 database='agbase_database/'"$database"'.fa'
 Dbase="$name"'.fa'
