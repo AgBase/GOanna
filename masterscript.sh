@@ -45,7 +45,7 @@ if [ -n "${num_threads}" ]; then ARGS="$ARGS -num_threads $num_threads"; else AR
 
 
 if [[ "$experimental" = "yes" ]]; then database="$database"'_exponly'; fi
-if [ -z "$experimental" ]; then database="$database"'_exponly'; fi
+if [[ -z "$experimental" ]]; then database="$database"'_exponly'; fi
 name="$database"
 database='agbase_database/'"$database"'.fa'
 Dbase="$name"'.fa'
@@ -90,19 +90,18 @@ awk 'BEGIN { OFS = "\t" } {print $1, $3-$2, $2, $3, $4, $6-$5, $5, $6, $7, $8, $
 echo -e "Query_ID\tQuery_length\tQuery_start\tQuery_end\tSubject_ID\tSubject_length\tSubject_start\tSubject_end\tE_value\tPercent_ID\tQuery_coverage\tPercent_positive_ID\tGap_openings\tTotal_gaps\tBitscore\tRaw_score" | cat - tmp2.tsv > temp && mv temp $out.tsv
 
 ##################################################################################################################
-#script to transfer GOA info from gene_association.goa_uniprot file for the agbase uniprot entries -- maintained in the Data Store for public access
-
 ##PULL BLAST IDS FROM BLAST OUTPUT TSV
 
 ##THIS LINE IS CLOSE BUT STILL DOESN'T HANDLE HEADER QUITE RIGHT--MAY WORK RIGHT NOW
-#tail --lines=+2 $out.tsv | awk -F "\t" '{print $1, $5}' > "blstmp.txt"
+tail --lines=+2 $out.tsv | awk -F "\t" '{print $1, $5}' > "blstmp.txt"
 
-#awk 'BEGIN {OFS = "\t"} {sub(/_.*/, "", $2); print $1, $2}'  blstmp.txt > blastids.txt
+awk 'BEGIN {OFS = "\t"} {sub(/_.*/, "", $2); print $1, $2}'  blstmp.txt > blastids.txt
 
-#if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
+if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 #if [[ "$experimental" = "yes" ]]; then splitB.pl  "go_info/gene_association_exponly.goa_uniprot" "splitgoa"; else splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"; fi
+if [[ "$experimental" = "no" ]]; then splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"; else splitB.pl  "go_info/gene_association_exponly.goa_uniprot" "splitgoa"; fi
 
 ##PULL SUBSET OF GOA LINES THAT MATCHED BLAST RESULTS INTO GOA_ENTRIES
 #cyverse_blast2GO.pl "blastids.txt" "splitgoa"
