@@ -36,11 +36,8 @@ transcript_peps="${transcript_peps}"
 trans_peps=$(basename "${transcript_peps}")
 
 #IF STATEMENTS EXIST FOR EACH OPTIONAL BLAST PARAMETER
-if [ -n "${perc_pos}" ]; then ARGS="$ARGS -ppos $perc_pos"; fi
-if [ -n "${E_value}" ]; then ARGS="$ARGS -eval $E_value"; fi
-if [ -n "${percID}" ]; then ARGS="$ARGS -pident $percID"; fi
+if [ -n "${E_value}" ]; then ARGS="$ARGS -evalue $E_value"; fi
 if [ -n "${max_matches}" ]; then ARGS="$ARGS -max_target_seqs $max_matches"; fi
-if [ -n "${bitscore}" ]; then ARGS="$ARGS -bitscore $bitscore"; fi
 if [ -n "${num_threads}" ]; then ARGS="$ARGS -num_threads $num_threads"; else ARGS="$ARGS -num_threads 4"; fi
 ######################################################################################################
 ##CHOOSE BLAST DATABASE BASED ON WHETHER WE WANT EXPERIMENTAL ONLY OR ALL EVIDENCE CODES
@@ -80,9 +77,9 @@ if [ -z "${perc_ID}" ]; then perc_ID="0"; fi
 if [ -z "${qcovs}" ]; then qcovs="0"; fi
 if [ -z "${perc_pos}" ]; then perc_pos="0"; fi
 if [ -z "${bitscore}" ]; then bitscore="0"; fi
-if [ -z "${gaps}" ]; then gaps="0"; fi
-if [ -z "${gapopen}" ]; then gapopen="0"; fi
-awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore -v v=$gaps -v u=$gapopen '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w) && ($12 >= v) && ($11 >= u)) { print }}' $out.tsv > tmp.tsv
+if [ -z "${gaps}" ]; then gaps="1000"; fi
+if [ -z "${gapopen}" ]; then gapopen="100"; fi
+awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore -v v=$gaps -v u=$gapopen '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w) && ($12 < v) && ($11 < u)) { print }}' $out.tsv > tmp.tsv
 
 ##CALCULATE EXTRA COLUMNS AND ADD THEM TO OUTPUT
 awk 'BEGIN { OFS = "\t" } {print $1, $3-$2, $2, $3, $4, $6-$5, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14}' tmp.tsv > tmp2.tsv
