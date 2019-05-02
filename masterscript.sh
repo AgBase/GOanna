@@ -138,18 +138,21 @@ awk 'BEGIN {FS ="\t"}{OFS = "\t"} {print $2,$5,$9}' goanna_gaf.txt > slim_input.
 
 
 ##REMOVE FILES THAT ARE NO LONGER NECESSARY
-#rm goa_entries.txt
-#rm -r splitgoa
-#rm gocombo_tmp.txt
-#rm blastids.txt
-#rm blstmp.txt
-#rm tmp.tsv
-#rm tmp2.tsv
-#rm *.phr
-#rm *.pin
-#rm *.pog
-#rm *.psd
-#rm *.psi
-#rm *.psq
+if [ -s "slim_input.txt" ]
+then
+    rm goa_entries.txt
+    rm -r splitgoa
+    rm gocombo_tmp.txt
+    rm blastids.txt
+    rm blstmp.txt
+    rm tmp.tsv
+    rm tmp2.tsv
+    rm *.phr
+    rm *.pin
+    rm *.pog
+    rm *.psd
+    rm *.psi
+    rm *.psq
+fi
 
 
