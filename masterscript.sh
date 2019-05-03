@@ -3,7 +3,7 @@
 #######################################################################################################
 ##SET UP OPTIONS FOR MAKEBLASTDB AND BLASTP
 
-while getopts a:b:c:d:e:f:g:h:k:l:m:n:o:p:q:r:s:t:u:v:x:y:z option
+while getopts a:b:c:d:e:f:g:hk:l:m:n:o:p:q:r:s:t:u:v:x:y:z option
 do
         case "${option}"
         in
@@ -15,7 +15,6 @@ do
                 f) max_matches=${OPTARG};;
                 e) E_value=${OPTARG};;
                 g) percID=${OPTARG};;
-               # h) help=${OPTARG};; ADD USAGE STATEMENT
 		m) perc_pos=${OPTARG};;
 		o) out=${OPTARG};;
 		s) bitscore=${OPTARG};;
@@ -25,8 +24,31 @@ do
 		t) num_threads=${OPTARG};;
 		u) assignedby=${OPTARG};;
 		x) gaf_taxid=${OPTARG};;
+		h);;
         esac
 done
+#####################################################################################################
+if [ "$1" == "-h" ]; then
+  echo "Options:
+    -a Blast database basename ('arthopod', 'bacteria', 'bird', 'crustacean', 'fish', 'fungi', 'human', 'insecta',
+       'invertebrates', 'mammals', 'nematode', 'plants', 'rodents' 'uniprot_sprot', 'uniprot_trembl' or 'vertebrates')
+    -c peptide fasta filename
+    -o Blast output file basename
+    [-b transfer GO with experimental evidence only ('yes' or 'no')]
+    [-d database of query ID. Default: 'user_input_db']
+    [-f Number of aligned sequences to keep. Default: 500]
+    [-g Blast percent identity above which match should be kept. Default: keep all matches.]
+    [-h help]
+    [-m Blast percent positive identity above which match should be kept. Default: keep all matches.]
+    [-s bitscore above which match should be kept. Default: keep all matches.]
+    [-k Maximum number of gap openings allowed for match to be kept.Default: 100]
+    [-l Maximum number of total gaps allowed for match to be kept. Default: 1000]
+    [-q Minimum query coverage per subject for match to be kept. Default: keep all matches]
+    [-t Number of threads.  Default: 4]
+    [-u 'Assigned by' field of your GAF output file. Default: 'user']
+    [-x Taxon ID of the peptides you are blasting. Default: 'taxon:0000']"
+  exit 0
+fi
 
 
 ARGS=''
