@@ -48,3 +48,5 @@ VOLUME ["/go_info", "/agbase_database"]
 ENTRYPOINT ["/usr/bin/masterscript.sh"]
 
 
+# Add path to working directory
+WORKDIR /work-dir

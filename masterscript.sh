@@ -71,12 +71,12 @@ if [ -p ]; then ARGS="$ARGS -parse_deflines"; else ARGS="$ARGS -parse_deflines";
 if [[ "$experimental" = "yes" ]]; then database="$database"'_exponly'; fi
 if [[ -z "$experimental" ]]; then database="$database"'_exponly'; fi
 name="$database"
-database='agbase_database/'"$database"'.fa'
+database='/agbase_database/'"$database"'.fa'
 Dbase="$name"'.fa'
 
 
 ##MAKE BLAST INDEX
-makeblastdb -in agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
+makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
 
 ##RUN BLASTP
 blastp  -query $transcript_peps -db $name -out $out.asn -outfmt 11 $ARGS
@@ -112,7 +112,7 @@ awk 'BEGIN {OFS = "\t"} {sub(/_.*/, "", $2); print $1, $2}'  blstmp.txt > blasti
 
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
-if [[ "$experimental" = "no" ]]; then splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"; else splitB.pl  "go_info/gene_association_exponly.goa_uniprot" "splitgoa"; fi
+if [[ "$experimental" = "no" ]]; then splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"; else splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"; fi
 
 ##PULL SUBSET OF GOA LINES THAT MATCHED BLAST RESULTS INTO GOA_ENTRIES.TXT
 cyverse_blast2GO.pl "blastids.txt" "splitgoa"
