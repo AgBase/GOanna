@@ -15,7 +15,6 @@ RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh
 
-#RUN mkdir /data /config
 
 # give write permissions to conda folder
 RUN chmod 777 -R /opt/conda/
@@ -42,7 +41,7 @@ ADD cyverse_blast2GO.pl /usr/bin
 # Change the permissions and the path for the wrapper script
 RUN chmod +x /usr/bin/masterscript.sh
 
-#VOLUME ["/go_info", "/agbase_database"]
+RUN mkdir agbase_database  go_info
 
 # Entrypoint
 ENTRYPOINT ["/usr/bin/masterscript.sh"]

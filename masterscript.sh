@@ -62,7 +62,7 @@ trans_peps=$(basename "${transcript_peps}")
 #IF STATEMENTS EXIST FOR EACH OPTIONAL BLAST PARAMETER
 if [ -n "${E_value}" ]; then ARGS="$ARGS -evalue $E_value"; fi
 if [ -n "${max_matches}" ]; then ARGS="$ARGS -max_target_seqs $max_matches"; fi
-if [ -n "${num_threads}" ]; then ARGS="$ARGS -num_threads $num_threads"; else ARGS="$ARGS -num_threads 4"; fi
+if [ -n "${num_threads}" ]; then ARGS="$ARGS -num_threads $num_threads"; fi
 if [ -p ]; then ARGS="$ARGS -parse_deflines"; else ARGS="$ARGS -parse_deflines"; fi
 ######################################################################################################
 
@@ -142,15 +142,15 @@ awk 'BEGIN {FS = "\t"}{OFS = "\t"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' bla
 awk  -v a="$outgaf1" -v b="$outgaf15" -v c="$outgaf13" -v d="$outgaf14" -v e="$outgaf6" -v f="$outgaf7" -v g="$outgaf12" -v h="$outgaf4" -v i="$outgaf11" -v j="$outgaf17" -v k="$prefix" 'BEGIN {FS = "\t"}{OFS = "\t"}{print a,$1,$1,h,$6,e,f,(k$3),$10,$1,i,g,c,d,b,$18,j}' gocombo_tmp.txt > $out'_goanna_gaf.tsv'
 
 ##APPEND HEADER TO GAF OUTPUT
-sed -i '1 i\!gaf-version: 2.0' $out_goanna_gaf.tsv
+sed -i '1 i\!gaf-version: 2.0' $out'_goanna_gaf.tsv'
 
 ##PULL COLUMNS FOR GO SLIM FILE
-awk 'BEGIN {FS ="\t"}{OFS = "\t"} {print $2,$5,$9}' $out_goanna_gaf.tsv > $out'_slim_input.txt'
+awk 'BEGIN {FS ="\t"}{OFS = "\t"} {print $2,$5,$9}' $out'_goanna_gaf.tsv' > $out'_slim_input.txt'
 
 
 
 ##REMOVE FILES THAT ARE NO LONGER NECESSARY
-if [ -s "$out_slim_input.txt" ]
+if [ -s "$out"'_slim_input.txt' ]
 then
     rm goa_entries.txt
     rm -r splitgoa
