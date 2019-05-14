@@ -31,7 +31,7 @@ done
 #####################################################################################################
 if [ "$1" == "-h" ]; then
   echo "Options:
-    -a Blast database basename ('arthopod', 'bacteria', 'bird', 'crustacean', 'fish', 'fungi', 'human', 'insecta',
+    -a Blast database basename ('arthropod', 'bacteria', 'bird', 'crustacean', 'fish', 'fungi', 'human', 'insecta',
        'invertebrates', 'mammals', 'nematode', 'plants', 'rodents' 'uniprot_sprot', 'uniprot_trembl' or 'vertebrates')
     -c peptide fasta filename
     -o Blast output file basename
@@ -150,7 +150,7 @@ awk 'BEGIN {FS ="\t"}{OFS = "\t"} {print $2,$5,$9}' $out'_goanna_gaf.tsv' > $out
 
 
 ##REMOVE FILES THAT ARE NO LONGER NECESSARY
-if [ -s "$out"'_slim_input.txt' ]
+if [ -s $out'_slim_input.txt' ]
 then
     rm goa_entries.txt
     rm -r splitgoa
