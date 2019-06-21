@@ -76,7 +76,7 @@ Dbase="$name"'.fa'
 
 
 ##MAKE BLAST INDEX
-makeblastdb -in agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
+makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
 
 ##RUN BLASTP
 blastp  -query $transcript_peps -db $name -out $out.asn -outfmt 11 $ARGS
@@ -85,7 +85,6 @@ blastp  -query $transcript_peps -db $name -out $out.asn -outfmt 11 $ARGS
 ##MAKE BLAST OUTPUT FORMATS 1 AND 6
 blast_formatter -archive $out.asn -out $out.html -outfmt 1 -html
 blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score'
-
 #################################################################################################################
 
 ##FILTER BALST OUTPUT 6 (OPTIONALLY) BY %ID, QUERY COVERAGE, % POSITIVE ID, BITSCORE, TOTAL GAPS, GAP OPENINGS
@@ -110,9 +109,12 @@ tail --lines=+2 $out.tsv | awk -F "\t" '{print $1, $5}' > "blstmp.txt"
 ##REMOVE THE _ AND EVERYTHING AFTER FROM THE SUBJECT ID SO THAT IT WILL MATCH THE GOA FILE
 awk 'BEGIN {OFS = "\t"} {sub(/_.*/, "", $2); print $1, $2}'  blstmp.txt > blastids.txt
 
+##MAKE KOABAS ANNOATATE INPUT FILE
+awk 'BEGIN {OFS = "\t"} {print $2}' blastids.txt > KOBAS_annotate_input.txt
+
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
-if [[ "$experimental" = "no" ]]; then splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"; else splitB.pl  "go_info/gene_association_exponly.goa_uniprot" "splitgoa"; fi
+if [[ "$experimental" = "no" ]]; then splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"; else splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"; fi
 
 ##PULL SUBSET OF GOA LINES THAT MATCHED BLAST RESULTS INTO GOA_ENTRIES.TXT
 cyverse_blast2GO.pl "blastids.txt" "splitgoa"
@@ -155,8 +157,8 @@ then
     rm goa_entries.txt
     rm -r splitgoa
     rm gocombo_tmp.txt
-    rm blastids.txt
     rm blstmp.txt
+    rm blastids.txt 
     rm tmp.tsv
     rm tmp2.tsv
     rm *.phr
