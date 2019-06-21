@@ -41,7 +41,9 @@ ADD cyverse_blast2GO.pl /usr/bin
 # Change the permissions and the path for the wrapper script
 RUN chmod +x /usr/bin/masterscript.sh
 
-RUN mkdir agbase_database  go_info
+RUN mkdir /work-dir
+RUN mkdir /agbase_database
+RUN mkdir /go_info
 
 # Entrypoint
 ENTRYPOINT ["/usr/bin/masterscript.sh"]
