@@ -25,7 +25,7 @@ do
 		u) assignedby=${OPTARG};;
 		x) gaf_taxid=${OPTARG};;
 		h);;
-		p);;
+		p) pdef=true ;;
         esac
 done
 #####################################################################################################
@@ -63,7 +63,7 @@ trans_peps=$(basename "${transcript_peps}")
 if [ -n "${E_value}" ]; then ARGS="$ARGS -evalue $E_value"; fi
 if [ -n "${max_matches}" ]; then ARGS="$ARGS -max_target_seqs $max_matches"; fi
 if [ -n "${num_threads}" ]; then ARGS="$ARGS -num_threads $num_threads"; fi
-if [ -p ]; then ARGS="$ARGS -parse_deflines"; else ARGS="$ARGS -parse_deflines"; fi
+if [[ "$pdef" = "true" ]]; then ARGS="$ARGS -parse_deflines"; fi
 ######################################################################################################
 
 ##CHOOSE BLAST DATABASE BASED ON WHETHER WE WANT EXPERIMENTAL ONLY OR ALL EVIDENCE CODES
