@@ -119,26 +119,18 @@ if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 rootgo=/go_info/gene_association.goa_uniprot
 workgo=go_info/gene_association.goa_uniprot
 
-if [ -f $rootgo ]
+if [ -r $rootgo ] && [[ "$experimental" = "no" ]]
 then
-    echo /go_info/gene_association.goa_uniprot exists
-    if [[ "$experimental" = "no" ]]
-    then 
-        splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
-    else 
-        splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
-    fi
-elif [ -f $workgo ] 
-then
-    echo ./go_info/gene_association.goa_uniprot exists
-    if [[ "$experimental" = "no" ]]
-    then 
-        splitB.pl  "./go_info/gene_association.goa_uniprot" "splitgoa"
-    else 
-        splitB.pl "./go_info/gene_association_exponly.goa_uniprot" "splitgoa"
-    fi
-else
-    echo Uniprot goa file cannot be found
+    splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
+elif [ -r $rootgo ] && [[ "$experimental" != "no" ]]
+then 
+    splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
+elif [ -r $workgo ] && [[ "$experimental" = "no" ]]
+then 
+    splitB.pl  "./go_info/gene_association.goa_uniprot" "splitgoa"
+elif [ -r $workgo ] && [[ "$experimental" != "no" ]]
+then 
+    splitB.pl  "./go_info/gene_association_exponly.goa_uniprot" "splitgoa"
 fi
 
 ##PULL SUBSET OF GOA LINES THAT MATCHED BLAST RESULTS INTO GOA_ENTRIES.TXT
