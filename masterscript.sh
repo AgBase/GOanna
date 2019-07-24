@@ -116,8 +116,8 @@ awk 'BEGIN {OFS = "\t"} {print $2}' blastids.txt > KOBAS_annotate_input.txt
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
-rootgo = /go_info/gene_association.goa_uniprot
-workgo = go_info/gene_association.goa_uniprot
+rootgo='/go_info/gene_association.goa_uniprot'
+workgo='go_info/gene_association.goa_uniprot'
 
 if [[ -f "$rootgo" ]]
 then
