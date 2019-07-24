@@ -119,7 +119,7 @@ if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 rootgo=/go_info/gene_association.goa_uniprot
 workgo=go_info/gene_association.goa_uniprot
 
-if [[ -f "$rootgo" ]]
+if [ -f $rootgo ]
 then
     echo /go_info/gene_association.goa_uniprot exists
     if [[ "$experimental" = "no" ]]
@@ -128,7 +128,7 @@ then
     else 
         splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
     fi
-elif [[ -f "$workgo" ]] 
+elif [ -f $workgo ] 
 then
     echo ./go_info/gene_association.goa_uniprot exists
     if [[ "$experimental" = "no" ]]
