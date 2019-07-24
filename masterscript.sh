@@ -116,6 +116,9 @@ awk 'BEGIN {OFS = "\t"} {print $2}' blastids.txt > KOBAS_annotate_input.txt
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
+ls -l /go_info
+ls -l go_info
+
 if [ -f "/go_info/gene_association.goa_uniprot" ]
 then
     echo /go_info/gene_association.goa_uniprot exits
@@ -125,14 +128,14 @@ then
     else 
         splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
     fi
-elif [ -f "go_info/gene_association.goa_uniprot" ] 
+elif [ -f "./go_info/gene_association.goa_uniprot" ] 
 then
-    echo go_info/gene_association.goa_uniprot exists
+    echo ./go_info/gene_association.goa_uniprot exists
     if [[ "$experimental" = "no" ]]
     then 
-        splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"
+        splitB.pl  "./go_info/gene_association.goa_uniprot" "splitgoa"
     else 
-        splitB.pl "go_info/gene_association_exponly.goa_uniprot" "splitgoa"
+        splitB.pl "./go_info/gene_association_exponly.goa_uniprot" "splitgoa"
     fi
 else
     echo Uniprot goa file cannot be found
