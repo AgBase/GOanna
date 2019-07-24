@@ -24,12 +24,12 @@ do
 		t) num_threads=${OPTARG};;
 		u) assignedby=${OPTARG};;
 		x) gaf_taxid=${OPTARG};;
-		h);;
+		h) help=true ;;
 		p) pdef=true ;;
         esac
 done
 #####################################################################################################
-if [ "$1" == "-h" ]; then
+if [[ "help" = "true" ]] ; then
   echo "Options:
     -a Blast database basename ('arthropod', 'bacteria', 'bird', 'crustacean', 'fish', 'fungi', 'human', 'insecta',
        'invertebrates', 'mammals', 'nematode', 'plants', 'rodents' 'uniprot_sprot', 'uniprot_trembl' or 'vertebrates')
@@ -76,8 +76,9 @@ Dbase="$name"'.fa'
 
 
 ##MAKE BLAST INDEX
-makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
-
+test -f "/agbase_database/$Dbase" && makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
+test -f "agbase_database/$Dbase" && makeblastdb -in agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
+    
 ##RUN BLASTP
 blastp  -query $transcript_peps -db $name -out $out.asn -outfmt 11 $ARGS
 
@@ -114,7 +115,9 @@ awk 'BEGIN {OFS = "\t"} {print $2}' blastids.txt > KOBAS_annotate_input.txt
 
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
-if [[ "$experimental" = "no" ]]; then splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"; else splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"; fi
+
+test -f "/go_info/gene_association.goa_uniprot" && if [[ "$experimental" = "no" ]]; then splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"; else splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"; fi
+test -f "go_info/gene_association.goa_uniprot" && if [[ "$experimental" = "no" ]]; then splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"; else splitB.pl "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"; fi
 
 ##PULL SUBSET OF GOA LINES THAT MATCHED BLAST RESULTS INTO GOA_ENTRIES.TXT
 cyverse_blast2GO.pl "blastids.txt" "splitgoa"
