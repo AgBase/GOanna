@@ -116,19 +116,19 @@ awk 'BEGIN {OFS = "\t"} {print $2}' blastids.txt > KOBAS_annotate_input.txt
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
-rootgo='/go_info/gene_association.goa_uniprot'
-workgo='go_info/gene_association.goa_uniprot'
+rootgo=/go_info/gene_association.goa_uniprot
+workgo=go_info/gene_association.goa_uniprot
 
 if [[ -f "$rootgo" ]]
 then
-    echo /go_info/gene_association.goa_uniprot exits
+    echo /go_info/gene_association.goa_uniprot exists
     if [[ "$experimental" = "no" ]]
     then 
         splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
     else 
         splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
     fi
-elif [ -f "$workgo" ] 
+elif [[ -f "$workgo" ]] 
 then
     echo ./go_info/gene_association.goa_uniprot exists
     if [[ "$experimental" = "no" ]]
