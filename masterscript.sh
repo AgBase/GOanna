@@ -116,21 +116,14 @@ awk 'BEGIN {OFS = "\t"} {print $2}' blastids.txt > KOBAS_annotate_input.txt
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
-rootgo='/go_info/gene_association.goa_uniprot'
-workgo='go_info/gene_association.goa_uniprot'
-
-if [ -r $rootgo ] && [[ "$experimental" = "no" ]]
+if [[ "$experimental" = "no" ]]
 then
-    splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
-elif [ -r $rootgo ] && [[ "$experimental" != "no" ]]
-then 
-    splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
-elif [ -r $workgo ] && [[ "$experimental" = "no" ]]
-then 
-    splitB.pl  "./go_info/gene_association.goa_uniprot" "splitgoa"
-elif [ -r $workgo ] && [[ "$experimental" != "no" ]]
-then 
-    splitB.pl  "./go_info/gene_association_exponly.goa_uniprot" "splitgoa"
+    test -f /go_info/gene_association.goa_uniprot && splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
+    test -f ./go_info/gene_association.goa_uniprot && splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
+elif [[ "$experimental" != "no" ]]
+then
+    test -f /go_info/gene_association_exponly.goa_uniprot && splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
+    test -f ./go_info/gene_association_exponly.goa_uniprot && splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
 fi
 
 ##PULL SUBSET OF GOA LINES THAT MATCHED BLAST RESULTS INTO GOA_ENTRIES.TXT
