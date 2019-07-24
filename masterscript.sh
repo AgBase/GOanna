@@ -130,9 +130,9 @@ then
     echo go_info/gene_association.goa_uniprot exists
     if [[ "$experimental" = "no" ]]
     then 
-        splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
+        splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"
     else 
-        splitB.pl "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
+        splitB.pl "go_info/gene_association_exponly.goa_uniprot" "splitgoa"
     fi
 else
     echo Uniprot goa file cannot be found
