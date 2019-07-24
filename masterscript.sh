@@ -125,6 +125,7 @@ then
         splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
     fi
 elif [ -f "go_info/gene_association.goa_uniprot" ] 
+then
     if [[ "$experimental" = "no" ]]
     then 
         splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
