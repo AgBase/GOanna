@@ -66,7 +66,7 @@ if ((!-f $filename) && (-s $filename)) { next; }
   if ($flds[3] ne '') {  next; }
 
       # evd must be experimental
-  if (not exists $EXP_EVD_CODES{$flds[6]}) { next; }  
+#  if (not exists $EXP_EVD_CODES{$flds[6]}) { next; }  
  
 	if (exists $blast_hits{$flds[$gaf_obj_colnum]}) {
 	     print $out_fh $line . "\n";
