@@ -116,8 +116,20 @@ awk 'BEGIN {OFS = "\t"} {print $2}' blastids.txt > KOBAS_annotate_input.txt
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
-test -f "/go_info/gene_association.goa_uniprot" && if [[ "$experimental" = "no" ]]; then splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"; else splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"; fi
-test -f "go_info/gene_association.goa_uniprot" && if [[ "$experimental" = "no" ]]; then splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"; else splitB.pl "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"; fi
+if [ -f "/go_info/gene_association.goa_uniprot" ]
+    then 
+        if [[ "$experimental" = "no" ]]
+            then splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
+            else splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
+        fi
+    elif [ -f "go_info/gene_association.goa_uniprot" ] 
+        if [[ "$experimental" = "no" ]]
+            then splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
+            else splitB.pl "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
+        fi
+    esle
+        echo "Uniprot goa file cannot be found"
+fi
 
 ##PULL SUBSET OF GOA LINES THAT MATCHED BLAST RESULTS INTO GOA_ENTRIES.TXT
 cyverse_blast2GO.pl "blastids.txt" "splitgoa"
