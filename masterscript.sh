@@ -117,7 +117,8 @@ awk 'BEGIN {OFS = "\t"} {print $2}' blastids.txt > KOBAS_annotate_input.txt
 if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
 if [ -f "/go_info/gene_association.goa_uniprot" ]
-then 
+then
+    echo /go_info/gene_association.goa_uniprot exits
     if [[ "$experimental" = "no" ]]
     then 
         splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
@@ -126,6 +127,7 @@ then
     fi
 elif [ -f "go_info/gene_association.goa_uniprot" ] 
 then
+    echo go_info/gene_association.goa_uniprot exists
     if [[ "$experimental" = "no" ]]
     then 
         splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
@@ -133,7 +135,7 @@ then
         splitB.pl "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
     fi
 else
-    echo "Uniprot goa file cannot be found"
+    echo Uniprot goa file cannot be found
 fi
 
 ##PULL SUBSET OF GOA LINES THAT MATCHED BLAST RESULTS INTO GOA_ENTRIES.TXT
