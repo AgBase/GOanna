@@ -29,7 +29,7 @@ do
         esac
 done
 #####################################################################################################
-if [[ "help" = "true" ]] ; then
+if [[ "$help" = "true" ]] ; then
   echo "Options:
     -a Blast database basename ('arthropod', 'bacteria', 'bird', 'crustacean', 'fish', 'fungi', 'human', 'insecta',
        'invertebrates', 'mammals', 'nematode', 'plants', 'rodents' 'uniprot_sprot', 'uniprot_trembl' or 'vertebrates')
