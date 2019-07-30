@@ -84,7 +84,7 @@ blastp  -query $transcript_peps -db $name -out $out.asn -outfmt 11 $ARGS
 
 
 ##MAKE BLAST OUTPUT FORMATS 1 AND 6
-blast_formatter -archive $out.asn -out $out.html -outfmt 1 -html
+blast_formatter -archive $out.asn -out $out.html -outfmt 0 -html
 blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score'
 #################################################################################################################
 
