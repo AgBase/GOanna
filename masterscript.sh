@@ -110,9 +110,6 @@ tail --lines=+2 $out.tsv | awk -F "\t" '{print $1, $5}' > "blstmp.txt"
 ##REMOVE THE _ AND EVERYTHING AFTER FROM THE SUBJECT ID SO THAT IT WILL MATCH THE GOA FILE
 awk 'BEGIN {OFS = "\t"} {sub(/_.*/, "", $2); print $1, $2}'  blstmp.txt > blastids.txt
 
-##MAKE KOABAS ANNOATATE INPUT FILE
-#awk 'BEGIN {OFS = "\t"} {print $2}' blastids.txt | uniq > $out'_KOBAS_annotate_input.txt'
-
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
