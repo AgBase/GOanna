@@ -153,13 +153,8 @@ awk  -v a="$outgaf1" -v b="$outgaf15" -v c="$outgaf13" -v d="$outgaf14" -v e="$o
 ##APPEND HEADER TO GAF OUTPUT
 sed -i '1 i\!gaf-version: 2.0' $out'_goanna_gaf.tsv'
 
-##PULL COLUMNS FOR GO SLIM FILE
-awk 'BEGIN {FS ="\t"}{OFS = "\t"} {print $2,$5,$9}' $out'_goanna_gaf.tsv' > $out'_slim_input.txt'
-
-
-
 ##REMOVE FILES THAT ARE NO LONGER NECESSARY
-if [ -s $out'_slim_input.txt' ]
+if [ -s $out'_goanna_gaf.tsv' ]
 then
     rm goa_entries.txt
     rm -r splitgoa
