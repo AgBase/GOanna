@@ -61,8 +61,8 @@ experimental="${experimental}"
 transcript_peps="${transcript_peps}"
 trans_peps=$(basename "${transcript_peps}")
 
-$num_threads=8
-$max_matches=3
+num_threads=8
+max_matches=3
 
 #IF STATEMENTS EXIST FOR EACH OPTIONAL BLAST PARAMETER
 if [ -n "${E_value}" ]; then ARGS="$ARGS -evalue $E_value"; fi
@@ -79,9 +79,9 @@ name="$database"
 database='agbase_database/'"$database"'.fa'
 Dbase="$name"'.fa'
 
-if [ $Dbase = "viruses_exponly.fa" ]; then echo "There are too few experimentally annotated viruses to perform this search. Please try all annotations instead (-b no)."; fi
-if [ $Dbase = "uniprot_sprot.fa" ]; then echo "This will search all of uniprot_sprot. To obtain high quality annotations please try experimental annotations only (-b yes)."; fi
-if [ $Dbase = "uniprot_trembl.fa" ]; then echo "This will search all of uniprot_trembl. To obtain high quality annotations please try experimental annotations only ( -b yes)."; fi
+if [ $Dbase = "viruses_exponly.fa" ]; then echo "There are too few experimentally annotated viruses to perform this search. Please try all annotations instead (-b no)."; exit; fi
+if [ $Dbase = "uniprot_sprot.fa" ]; then echo "This will search all of uniprot_sprot. To obtain high quality annotations please try experimental annotations only (-b yes)."; exit; fi
+if [ $Dbase = "uniprot_trembl.fa" ]; then echo "This will search all of uniprot_trembl. To obtain high quality annotations please try experimental annotations only ( -b yes)."; exit; fi
 
 ##MAKE BLAST INDEX
 test -f "/agbase_database/$Dbase" && makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
