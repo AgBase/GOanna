@@ -32,12 +32,14 @@ done
 if [[ "$help" = "true" ]] ; then
   echo "Options:
     -a Blast database basename ('arthropod', 'bacteria', 'bird', 'crustacean', 'fish', 'fungi', 'human', 'insecta',
-       'invertebrates', 'mammals', 'nematode', 'plants', 'rodents' 'uniprot_sprot', 'uniprot_trembl' or 'vertebrates')
+       'invertebrates', 'mammals', 'nematode', 'plants', 'rodents' 'uniprot_sprot', 'uniprot_trembl', 'vertebrates'
+	or 'viruses')
     -c peptide fasta filename
     -o Blast output file basename
-    [-b transfer GO with experimental evidence only ('yes' or 'no')]
+    [-b transfer GO with experimental evidence only ('yes' or 'no'). Default = 'yes'.]
     [-d database of query ID. Default: 'user_input_db']
-    [-f Number of aligned sequences to keep. Default: 500]
+    [-e Expect value (E) for saving hits. Default is 10.]
+    [-f Number of aligned sequences to keep. Default: 3]
     [-g Blast percent identity above which match should be kept. Default: keep all matches.]
     [-h help]
     [-m Blast percent positive identity above which match should be kept. Default: keep all matches.]
@@ -45,7 +47,7 @@ if [[ "$help" = "true" ]] ; then
     [-k Maximum number of gap openings allowed for match to be kept.Default: 100]
     [-l Maximum number of total gaps allowed for match to be kept. Default: 1000]
     [-q Minimum query coverage per subject for match to be kept. Default: keep all matches]
-    [-t Number of threads.  Default: 4]
+    [-t Number of threads.  Default: 8]
     [-u 'Assigned by' field of your GAF output file. Default: 'user']
     [-x Taxon ID of the peptides you are blasting. Default: 'taxon:0000']
     [-p parse_deflines. Parse query and subject bar delimited sequence identifiers]" 
@@ -58,6 +60,9 @@ database="${database}"
 experimental="${experimental}"
 transcript_peps="${transcript_peps}"
 trans_peps=$(basename "${transcript_peps}")
+
+$num_threads=8
+$max_matches=3
 
 #IF STATEMENTS EXIST FOR EACH OPTIONAL BLAST PARAMETER
 if [ -n "${E_value}" ]; then ARGS="$ARGS -evalue $E_value"; fi
@@ -74,6 +79,9 @@ name="$database"
 database='agbase_database/'"$database"'.fa'
 Dbase="$name"'.fa'
 
+if [ $Dbase = "viruses_exponly.fa" ]; then echo "There are too few experimentally annotated viruses to perform this search. Please try all annotations instead (-b no)."; fi
+if [ $Dbase = "uniprot_sprot.fa" ]; then echo "This will search all of uniprot_sprot. To obtain high quality annotations please try experimental annotations only (-b yes)."; fi
+if [ $Dbase = "uniprot_trembl.fa" ]; then echo "This will search all of uniprot_trembl. To obtain high quality annotations please try experimental annotations only ( -b yes)."; fi
 
 ##MAKE BLAST INDEX
 test -f "/agbase_database/$Dbase" && makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
