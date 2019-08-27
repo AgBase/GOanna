@@ -84,6 +84,9 @@ if [ $Dbase = "viruses_exponly.fa" ]; then echo "There are too few experimentall
 #if [ $Dbase = "uniprot_trembl.fa" ]; then echo "This will search all of uniprot_trembl. To obtain high quality annotations please try experimental annotations only ( -b yes)."; exit; fi
 
 ##MAKE BLAST INDEX
+test -f "/agbase_database/$Dbase.gz" && gunzip "/agbase_database/$Dbase.gz"
+test -f "agbase_database/$Dbase.gz" && gunzip "agbase_database/$Dbase.gz"
+
 test -f "/agbase_database/$Dbase" && makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
 test -f "agbase_database/$Dbase" && makeblastdb -in agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
     
