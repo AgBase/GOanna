@@ -126,11 +126,15 @@ if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
 if [[ "$experimental" = "no" ]]
 then
+    test -f /go_info/gene_association.goa_uniprot.gz && gunzip /go_info/gene_association.goa_uniprot.gz
     test -f /go_info/gene_association.goa_uniprot && splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
+    test -f ./go_info/gene_association.goa_uniprot.gz && gunzip ./go_info/gene_association.goa_uniprot.gz
     test -f ./go_info/gene_association.goa_uniprot && splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
 elif [[ "$experimental" != "no" ]]
 then
+    test -f /go_info/gene_association_exponly.goa_uniprot.gz && gunzip /go_info/gene_association_exponly.goa_uniprot.gz
     test -f /go_info/gene_association_exponly.goa_uniprot && splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
+    test -f ./go_info/gene_association_exponly.goa_uniprot.gz && gunzip ./go_info/gene_association_exponly.goa_uniprot.gz
     test -f ./go_info/gene_association_exponly.goa_uniprot && splitB.pl  "./go_info/gene_association_exponly.goa_uniprot" "splitgoa"
 fi
 
