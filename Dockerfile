@@ -1,7 +1,7 @@
 ## Dockerfile
 FROM ubuntu:16.04
 MAINTAINER Amanda Cooksey	
-LABEL Description="AgBase GOanna tool"
+LABEL Description="AgBase GOanna"
 
 # Install all the updates and download dependencies
 RUN apt-get update && \
@@ -21,12 +21,11 @@ RUN chmod 777 -R /opt/conda/
 
 ENV PATH=$PATH:/opt/conda/bin
 
-RUN conda config --add channels r
 RUN conda config --add channels bioconda
 
 RUN conda upgrade conda
 
-# add blast 2.7.1--i added this
+# add blast 2.7.1
 RUN conda install -c conda-forge -c bioconda blast==2.7.1
 
 ENV PATH /masterscript.sh/:$PATH

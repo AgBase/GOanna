@@ -37,7 +37,8 @@ if [[ "$help" = "true" ]] ; then
     -c peptide fasta filename
     -o Blast output file basename
     [-b transfer GO with experimental evidence only ('yes' or 'no'). Default = 'yes'.]
-    [-d database of query ID. Default: 'user_input_db']
+    [-d database of query ID. If your entry contains spaces either substitute and underscore (_) or, 
+        to preserve the space, use quotes around your entry. Default: 'user_input_db']
     [-e Expect value (E) for saving hits. Default is 10.]
     [-f Number of aligned sequences to keep. Default: 3]
     [-g Blast percent identity above which match should be kept. Default: keep all matches.]
@@ -48,7 +49,9 @@ if [[ "$help" = "true" ]] ; then
     [-l Maximum number of total gaps allowed for match to be kept. Default: 1000]
     [-q Minimum query coverage per subject for match to be kept. Default: keep all matches]
     [-t Number of threads.  Default: 8]
-    [-u 'Assigned by' field of your GAF output file. Default: 'user']
+    [-u 'Assigned by' field of your GAF output file. If your entry contains spaces (eg. firstname lastname) 
+        either substitute and underscore (_) or, to preserve the space, use quotes around your entry (eg. "firstname lastname")
+        Default: 'user']
     [-x Taxon ID of the peptides you are blasting. Default: 'taxon:0000']
     [-p parse_deflines. Parse query and subject bar delimited sequence identifiers]" 
   exit 0
@@ -79,6 +82,7 @@ name="$database"
 database='agbase_database/'"$database"'.fa'
 Dbase="$name"'.fa'
 
+#GIVES ERRORS IF USERS TRY TO SELECT DBS THAT DON'T EXIST (BUT LOGICALLY SHOULD)
 if [ $Dbase = "viruses_exponly.fa" ]; then echo "There are too few experimentally annotated viruses to perform this search. Please try all annotations instead (-b no)."; exit; fi
 if [ $Dbase = "uniprot_sprot.fa" ]; then echo "This will search all of uniprot_sprot. To obtain high quality annotations please try experimental annotations only (-b yes)."; exit; fi
 if [ $Dbase = "uniprot_trembl.fa" ]; then echo "This will search all of uniprot_trembl. To obtain high quality annotations please try experimental annotations only ( -b yes)."; exit; fi
@@ -99,7 +103,7 @@ blast_formatter -archive $out.asn -out $out.html -outfmt 0 -html
 blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score'
 #################################################################################################################
 
-##FILTER BALST OUTPUT 6 (OPTIONALLY) BY %ID, QUERY COVERAGE, % POSITIVE ID, BITSCORE, TOTAL GAPS, GAP OPENINGS
+##FILTER BLAST OUTPUT 6 (OPTIONALLY) BY %ID, QUERY COVERAGE, % POSITIVE ID, BITSCORE, TOTAL GAPS, GAP OPENINGS
 if [ -z "${perc_ID}" ]; then perc_ID="0"; fi
 if [ -z "${qcovs}" ]; then qcovs="0"; fi
 if [ -z "${perc_pos}" ]; then perc_pos="0"; fi
@@ -124,6 +128,7 @@ awk 'BEGIN {OFS = "\t"} {sub(/_.*/, "", $2); print $1, $2}'  blstmp.txt > blasti
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
+##UNZIP SELECTED DATABASES
 if [[ "$experimental" = "no" ]]
 then
     test -f /go_info/gene_association.goa_uniprot.gz && gunzip /go_info/gene_association.goa_uniprot.gz
@@ -142,7 +147,7 @@ fi
 cyverse_blast2GO.pl "blastids.txt" "splitgoa"
 
 #OUTGAF VARIABLES COUNT FROM 1 TO CORRESPOND TO THE GAF FILE SPEC
-#THESE WILL ALWAYS BE THE SAME AND CAN BE DECLARED OUTSIDE THE AWK STATEMENT
+#THESE (IMMEDIATELY BELOW) WILL ALWAYS BE THE SAME AND CAN BE DECLARED OUTSIDE THE AWK STATEMENT
 
 outgaf1="user_input_db"
 outgaf15="user"
@@ -156,12 +161,13 @@ outgaf11=""
 outgaf17=""
 prefix="UniprotKB:"
 
-#THESE ARE OPTIONALLY USER-SPECIFIED DEFAULTS IN LIST ABOVE
+#THESE ARE OPTIONALLY USER-SPECIFIED--DEFAULTS IN LIST ABOVE
 if [ -n "${gaf_db}" ]; then outgaf1="$gaf_db"; fi
 if [ -n "${assignedby}" ]; then outgaf15="$assignedby"; fi
 if [ -n "${gaf_taxid}" ]; then outgaf13="taxon:""$gaf_taxid"; fi
 
-#PULLING COLUMNS FROM BLASTIDS.TXT AND GOA_ENTRIES.TXT AND  PRINTING TO NEW COMBINED FILE GOCOMBO; PULL INFO FROM GOCOMBO_TMP.TXT  AND DECLARED VARIABLES ABOVE TO MAKE GAF OUTPUT
+#PULLING COLUMNS FROM BLASTIDS.TXT AND GOA_ENTRIES.TXT AND  PRINTING TO NEW COMBINED FILE GOCOMBO
+#PULL INFO FROM GOCOMBO_TMP.TXT  AND DECLARED VARIABLES ABOVE TO MAKE GAF OUTPUT
 awk 'BEGIN {FS = "\t"}{OFS = "\t"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' blastids.txt goa_entries.txt > gocombo_tmp.txt
 awk  -v a="$outgaf1" -v b="$outgaf15" -v c="$outgaf13" -v d="$outgaf14" -v e="$outgaf6" -v f="$outgaf7" -v g="$outgaf12" -v h="$outgaf4" -v i="$outgaf11" -v j="$outgaf17" -v k="$prefix" 'BEGIN {FS = "\t"}{OFS = "\t"}{print a,$1,$1,h,$6,e,f,(k$3),$10,$1,i,g,c,d,b,$18,j}' gocombo_tmp.txt > $out'_goanna_gaf.tsv'
 
