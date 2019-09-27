@@ -1,3 +1,3 @@
 # GOanna
 
-[Documentation for GOanna] (https://agbase-docs.readthedocs.io/en/latest/) is hosted by ReadtheDocs. 
+Documentation for GOanna is hosted by ReadtheDocs: https://agbase-docs.readthedocs.io/en/latest/ . 
