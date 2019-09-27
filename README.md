@@ -1,2 +1,3 @@
 # GOanna
-This is a readme file. There will be links to documentation shortly.
+
+Documentation for GOanna can be here: https://agbase-docs.readthedocs.io/en/latest/
