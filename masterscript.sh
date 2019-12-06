@@ -64,13 +64,11 @@ experimental="${experimental}"
 transcript_peps="${transcript_peps}"
 trans_peps=$(basename "${transcript_peps}")
 
-num_threads=8
-max_matches=3
 
 #IF STATEMENTS EXIST FOR EACH OPTIONAL BLAST PARAMETER
 if [ -n "${E_value}" ]; then ARGS="$ARGS -evalue $E_value"; fi
-if [ -n "${max_matches}" ]; then ARGS="$ARGS -max_target_seqs $max_matches"; fi
-if [ -n "${num_threads}" ]; then ARGS="$ARGS -num_threads $num_threads"; fi
+if [ -n "${max_matches}" ]; then ARGS="$ARGS -max_target_seqs $max_matches"; else ARGS="$ARGS -max_target_seqs 3"; fi
+if [ -n "${num_threads}" ]; then ARGS="$ARGS -num_threads $num_threads"; else ARGS="$ARGS -num_threads 8"; fi
 if [[ "$pdef" = "true" ]]; then ARGS="$ARGS -parse_deflines"; fi
 ######################################################################################################
 
