@@ -15,17 +15,17 @@ do
                 f) max_matches=${OPTARG};;
                 e) E_value=${OPTARG};;
                 g) percID=${OPTARG};;
-		m) perc_pos=${OPTARG};;
-		o) out=${OPTARG};;
-		s) bitscore=${OPTARG};;
+                m) perc_pos=${OPTARG};;
+                o) out=${OPTARG};;
+                s) bitscore=${OPTARG};;
                 k) gapopen=${OPTARG};;
                 l) gaps=${OPTARG};;
                 q) qcovs=${OPTARG};;
-		t) num_threads=${OPTARG};;
-		u) assignedby=${OPTARG};;
-		x) gaf_taxid=${OPTARG};;
-		h) help=true ;;
-		p) pdef=true ;;
+                t) num_threads=${OPTARG};;
+                u) assignedby=${OPTARG};;
+                x) gaf_taxid=${OPTARG};;
+                h) help=true ;;
+                p) pdef=true ;;
         esac
 done
 #####################################################################################################
