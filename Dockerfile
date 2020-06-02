@@ -1,6 +1,7 @@
 ## Dockerfile
 FROM ubuntu:16.04
-MAINTAINER Amanda Cooksey	
+MAINTAINER Amanda Cooksey
+MAINTAINER Surya Saha	
 LABEL Description="AgBase GOanna"
 
 # Install all the updates and download dependencies
