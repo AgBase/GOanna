@@ -21,6 +21,7 @@ do
                 k) gapopen=${OPTARG};;
                 l) gaps=${OPTARG};;
                 q) qcovs=${OPTARG};;
+                r) ratioqs=${OPTARG};;
                 t) num_threads=${OPTARG};;
                 u) assignedby=${OPTARG};;
                 x) gaf_taxid=${OPTARG};;
@@ -48,6 +49,7 @@ if [[ "$help" = "true" ]] ; then
     [-k Maximum number of gap openings allowed for match to be kept.Default: 100]
     [-l Maximum number of total gaps allowed for match to be kept. Default: 1000]
     [-q Minimum query coverage per subject for match to be kept. Default: keep all matches]
+    [-r Ratio of query length to subject length. Lengths should be comparable for match to be kept. Default: less than 1.2 so difference of up to 20% can be tolerated]
     [-t Number of threads.  Default: 8]
     [-u 'Assigned by' field of your GAF output file. If your entry contains spaces (eg. firstname lastname) 
         either substitute and underscore (_) or, to preserve the space, use quotes around your entry (eg. "firstname lastname")
@@ -98,17 +100,20 @@ blastp  -query $transcript_peps -db $name -out $out.asn -outfmt 11 $ARGS
 
 ##MAKE BLAST OUTPUT FORMATS 1 AND 6
 blast_formatter -archive $out.asn -out $out.html -outfmt 0 -html
-blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score'
+blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score qlen slen'
 #################################################################################################################
 
-##FILTER BLAST OUTPUT 6 (OPTIONALLY) BY %ID, QUERY COVERAGE, % POSITIVE ID, BITSCORE, TOTAL GAPS, GAP OPENINGS
+##FILTER BLAST OUTPUT 6 (OPTIONALLY) BY %ID, QUERY COVERAGE, % POSITIVE ID, BITSCORE, TOTAL GAPS, GAP OPENINGS, RATIO OF QUERY LENGTH TO SUBJECT LENGTH
 if [ -z "${perc_ID}" ]; then perc_ID="0"; fi
 if [ -z "${qcovs}" ]; then qcovs="0"; fi
 if [ -z "${perc_pos}" ]; then perc_pos="0"; fi
 if [ -z "${bitscore}" ]; then bitscore="0"; fi
 if [ -z "${gaps}" ]; then gaps="1000"; fi
 if [ -z "${gapopen}" ]; then gapopen="100"; fi
-awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore -v v=$gaps -v u=$gapopen '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w) && ($12 < v) && ($11 < u)) { print }}' $out.tsv > tmp.tsv
+if [ -z "${ratioqs}" ]; then ratioqs="1.2"; fi
+
+#awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore -v v=$gaps -v u=$gapopen '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w) && ($12 < v) && ($11 < u)) { print }}' $out.tsv > tmp.tsv
+awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore -v v=$gaps -v u=$gapopen -v r=$ratioqs '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w) && ($12 < v) && ($11 < u) && ($15/$16 <= r)) { print }}' $out.tsv > tmp.tsv
 
 ##CALCULATE QUERY AND SUBJECT LENGTH COLUMNS AND ADD THEM TO OUTPUT 6
 awk 'BEGIN { OFS = "\t" } {print $1, $3-$2, $2, $3, $4, $6-$5, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14}' tmp.tsv > tmp2.tsv
@@ -164,7 +169,7 @@ if [ -n "${gaf_db}" ]; then outgaf1="$gaf_db"; fi
 if [ -n "${assignedby}" ]; then outgaf15="$assignedby"; fi
 if [ -n "${gaf_taxid}" ]; then outgaf13="taxon:""$gaf_taxid"; fi
 
-#PULLING COLUMNS FROM BLASTIDS.TXT AND GOA_ENTRIES.TXT AND  PRINTING TO NEW COMBINED FILE GOCOMBO
+#PULLING COLUMNS FROM BLASTIDS.TXT AND GOA_ENTRIES.TXT AND PRINTING TO NEW COMBINED FILE GOCOMBO
 #PULL INFO FROM GOCOMBO_TMP.TXT  AND DECLARED VARIABLES ABOVE TO MAKE GAF OUTPUT
 awk 'BEGIN {FS = "\t"}{OFS = "\t"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' blastids.txt goa_entries.txt > gocombo_tmp.txt
 awk  -v a="$outgaf1" -v b="$outgaf15" -v c="$outgaf13" -v d="$outgaf14" -v e="$outgaf6" -v f="$outgaf7" -v g="$outgaf12" -v h="$outgaf4" -v i="$outgaf11" -v j="$outgaf17" -v k="$prefix" 'BEGIN {FS = "\t"}{OFS = "\t"}{print a,$1,$1,h,$6,e,f,(k$3),$10,$1,i,g,c,d,b,$18,j}' gocombo_tmp.txt > $out'_goanna_gaf.tsv'
