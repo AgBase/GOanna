@@ -185,7 +185,7 @@ cat gocombo_tmp.txt | while IFS="," read -r xp unip id symbol qual goacc pmid ev
 do
 	if [[ $aspect == P ]];
 		then
-		outgaf4="acts_upstream_of_or_within"
+		outgaf4="involved_in"
 		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $out'_goanna_gaf.tsv'
 	elif [ $aspect = F ];
 		then
