@@ -173,6 +173,7 @@ if [ -n "${gaf_taxid}" ]; then outgaf13="taxon:""$gaf_taxid"; fi
 ##APPEND HEADER TO GAF OUTPUT
 echo -e "!gaf-version: 2.2
 !date-generated:$(date +'%Y-%m-%d')
+!generated-by: AgBase
 
 Database\tDB_Object_ID\tDB_Object_Symbol\tQualifier\tGO_ID\tDB_Reference\tEvidence_Code\tWith_From\tAspect\tDB_Object_Name\tDB_Object_Synonyms\tDB_Object_Type\tTaxon\tDate\tAssigned_By\tAnnotation_Extension\tGene_Product_Form_Id" > $out'_goanna_gaf.tsv'
 
