@@ -191,11 +191,11 @@ do
 		then
 		outgaf4="enables"
 		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $out'_goanna_gaf.tsv'
-	elif [ $aspect = C ] && grep -q $goacc GO0032991_and_children.json;
+	elif [ $aspect = C ] && grep -q $goacc '/usr/GO0032991_and_children.json';
 		then
 		outgaf4="part_of"
 		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $out'_goanna_gaf.tsv'
-	elif [ $aspect = C ] && grep -vq $goacc GO0032991_and_children.json;
+	elif [ $aspect = C ] && grep -v -q $goacc '/usr/GO0032991_and_children.json';
 		then 
 		outgaf4="located_in"
 		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $out'_goanna_gaf.tsv'
@@ -203,6 +203,9 @@ do
 		echo $goacc $aspect "ERROR: qualifier not set"
 	fi
 done
+
+sort $out'_goanna_gaf.tsv' | uniq -u > uniq.gaf
+mv uniq.gaf $out'_goanna_gaf.tsv'
 
 
 ##REMOVE FILES THAT ARE NO LONGER NECESSARY
