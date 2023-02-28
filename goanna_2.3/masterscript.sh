@@ -204,7 +204,7 @@ do
 	fi
 done
 
-sort $out'_goanna_gaf.tsv' | uniq -u > uniq.gaf
+cat $out'_goanna_gaf.tsv' | uniq -u > uniq.gaf
 mv uniq.gaf $out'_goanna_gaf.tsv'
 
 
