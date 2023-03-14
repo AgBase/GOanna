@@ -33,7 +33,7 @@ RUN conda config --add channels bioconda
 
 RUN conda upgrade conda
 
-# add blast 2.13.0
+# ADD BLAST 2.13.0
 RUN conda install -c conda-forge -c bioconda blast==2.13.0
 
 ENV PATH /masterscript.sh/:$PATH
