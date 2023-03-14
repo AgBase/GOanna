@@ -57,6 +57,5 @@ ADD GO0032991_and_children.json /usr
 # Entrypoint
 ENTRYPOINT ["/usr/bin/masterscript.sh"]
 
-
 # Add path to working directory
 WORKDIR /work-dir
