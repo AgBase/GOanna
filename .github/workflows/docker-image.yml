@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file GOanna_2.3/Dockerfile --tag goanna:2.3
+      run: docker build . --file goanna_2.3/Dockerfile --tag 2.3
