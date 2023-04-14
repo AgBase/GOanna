@@ -25,8 +25,13 @@ RUN conda config --add channels bioconda
 
 RUN conda upgrade conda
 
+<<<<<<< HEAD
 # add blast 2.7.1
 RUN conda install -c conda-forge -c bioconda blast==2.7.1
+=======
+# ADD BLAST 2.13.0
+RUN conda install -c conda-forge -c bioconda blast==2.13.0
+>>>>>>> origin/master
 
 ENV PATH /masterscript.sh/:$PATH
 
@@ -49,7 +54,6 @@ ADD GO0032991_and_children.json /usr
 
 # Entrypoint
 ENTRYPOINT ["/usr/bin/masterscript.sh"]
-
 
 # Add path to working directory
 WORKDIR /work-dir
