@@ -1,25 +1,17 @@
 ## Dockerfile
-FROM ubuntu:22.04
-LABEL Description="AgBase GOanna version 2.3"
+FROM ubuntu:16.04
+MAINTAINER Amanda Cooksey
+LABEL Description="AgBase GOanna"
 
 # Install all the updates and download dependencies
 RUN apt-get update && \
     apt-get install -y \
-    locales \
     git \
     wget \
     bzip2
 
-#RUN locale-gen en_US.UTF-8
-# Set the locale
-RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
-    locale-gen
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
-
 RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
-    wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-py39_23.1.0-1-Linux-x86_64.sh -O ~/miniconda.sh && \
+    wget --quiet https://repo.continuum.io/miniconda/Miniconda2-4.0.5-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh
 
@@ -33,8 +25,8 @@ RUN conda config --add channels bioconda
 
 RUN conda upgrade conda
 
-# add blast 2.13.0
-RUN conda install -c conda-forge -c bioconda blast==2.13.0
+# add blast 2.7.1
+RUN conda install -c conda-forge -c bioconda blast==2.7.1
 
 ENV PATH /masterscript.sh/:$PATH
 
@@ -51,6 +43,7 @@ RUN chmod +x /usr/bin/masterscript.sh
 RUN mkdir /work-dir
 RUN mkdir /agbase_database
 RUN mkdir /go_info
+
 
 ADD GO0032991_and_children.json /usr
 

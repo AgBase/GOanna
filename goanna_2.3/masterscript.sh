@@ -87,20 +87,42 @@ if [ $Dbase = "viruses_exponly.fa" ]; then echo "There are too few experimentall
 if [ $Dbase = "uniprot_sprot.fa" ]; then echo "This will search all of uniprot_sprot. To obtain high quality annotations please try experimental annotations only (-b yes)."; exit; fi
 if [ $Dbase = "uniprot_trembl.fa" ]; then echo "This will search all of uniprot_trembl. To obtain high quality annotations please try experimental annotations only ( -b yes)."; exit; fi
 
-##MAKE BLAST INDEX
-test -f "/agbase_database/$Dbase.gz" && gunzip "/agbase_database/$Dbase.gz"
-test -f "agbase_database/$Dbase.gz" && gunzip "agbase_database/$Dbase.gz"
 
-test -f "/agbase_database/$Dbase" && makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
-test -f "agbase_database/$Dbase" && makeblastdb -in agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
+if [ -f "/agbase_database/$Dbase.gz" ]
+then
+	echo "/agbase_database/$Dbase.gz"
+	gunzip "/agbase_database/$Dbase.gz"
+	makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
+elif [ -f "agbase_database/$Dbase.gz" ]
+then
+	echo "agbase_database/$Dbase.gz"
+	gunzip "agbase_database/$Dbase.gz"
+	makeblastdb -in agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
+elif [ -f "/agbase_database/$Dbase" ]
+then
+	echo "/agbase_database/$Dbase"
+	makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
+elif [ -f "agbase_database/$Dbase" ]
+then
+	echo "agbase_database/$Dbase"
+	makeblastdb -in agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
+else
+	echo "There is no agbase_database file."
+fi
 
-##RUN BLASTP
-blastp  -query $transcript_peps -db $name -out $out.asn -outfmt 11 $ARGS
+echo 'database made' $(date)
 
+#RUN BLASTP
+blastp  -query $transcript_peps -db $name -out $out.asn -outfmt 11  $ARGS
+
+echo 'blastp run' $(date)
 
 ##MAKE BLAST OUTPUT FORMATS 1 AND 6
 blast_formatter -archive $out.asn -out $out.html -outfmt 0 -html
+echo 'html formatter run' $(date)
+
 blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score qlen slen'
+echo 'tsv formatter run' $(date)
 #################################################################################################################
 
 ##FILTER BLAST OUTPUT 6 (OPTIONALLY) BY %ID, QUERY COVERAGE, % POSITIVE ID, BITSCORE, TOTAL GAPS, GAP OPENINGS, RATIO OF QUERY LENGTH TO SUBJECT LENGTH
@@ -131,23 +153,68 @@ awk 'BEGIN {OFS = "\t"} {sub(/_.*/, "", $2); print $1, $2}'  blstmp.txt > blasti
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
 
-##UNZIP SELECTED DATABASES
+
+echo 'Current working directory:'
+ls -l
+
+echo 'go_info:'
+ls -l go_info
+
+#UNZIP NECESSARY  GO INFO DATABASES AND RUN SPLITB.PL
 if [[ "$experimental" = "no" ]]
 then
-    test -f /go_info/gene_association.goa_uniprot.gz && gunzip /go_info/gene_association.goa_uniprot.gz
-    test -f /go_info/gene_association.goa_uniprot && splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
-    test -f ./go_info/gene_association.goa_uniprot.gz && gunzip ./go_info/gene_association.goa_uniprot.gz
-    test -f ./go_info/gene_association.goa_uniprot && splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
+	echo "exponly=no"
+	if [ -f /go_info/gene_association.goa_uniprot.gz ]
+	then
+		echo '/go_info/gene_association.goa_uniprot.gz'
+		gunzip /go_info/gene_association.goa_uniprot.gz
+		splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
+	elif [ -f /go_info/gene_association.goa_uniprot ]
+	then
+		echo '/go_info/gene_association.goa_uniprot'
+		splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
+	elif [ -f go_info/gene_association.goa_uniprot.gz ]
+	then
+		echo 'go_info/gene_association.goa_uniprot.gz'
+		gunzip go_info/gene_association.goa_uniprot.gz
+		splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
+	elif [ -f go_info/gene_association.goa_uniprot ]
+	then
+		echo 'go_info/gene_association.goa_uniprot'
+		splitB.pl  "go_info/gene_association.goa_uniprot" "splitgoa"
+	else
+		echo 'There is no go_info file.'
+	fi
 elif [[ "$experimental" != "no" ]]
 then
-    test -f /go_info/gene_association_exponly.goa_uniprot.gz && gunzip /go_info/gene_association_exponly.goa_uniprot.gz
-    test -f /go_info/gene_association_exponly.goa_uniprot && splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
-    test -f ./go_info/gene_association_exponly.goa_uniprot.gz && gunzip ./go_info/gene_association_exponly.goa_uniprot.gz
-    test -f ./go_info/gene_association_exponly.goa_uniprot && splitB.pl  "./go_info/gene_association_exponly.goa_uniprot" "splitgoa"
+	echo "exponly=yes"
+	if [ -f /go_info/gene_association_exponly.goa_uniprot.gz ]
+	then
+		echo '/go_info/gene_association_exponly.goa_uniprot.gz'
+		gunzip /go_info/gene_association_exponly.goa_uniprot.gz
+		splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
+	elif [ -f /go_info/gene_association_exponly.goa_uniprot ]
+	then
+		echo '/go_info/gene_association_exponly.goa_uniprot'
+		splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
+	elif [ -f ./go_info/gene_association_exponly.goa_uniprot.gz ]
+	then
+		echo './go_info/gene_association_exponly.goa_uniprot.gz'
+		gunzip ./go_info/gene_association_exponly.goa_uniprot.gz
+		splitB.pl  "./go_info/gene_association_exponly.goa_uniprot" "splitgoa"
+	elif [ -f ./go_info/gene_association_exponly.goa_uniprot ]
+	then
+		echo './go_info/gene_association_exponly.goa_uniprot'
+		splitB.pl  "./go_info/gene_association_exponly.goa_uniprot" "splitgoa"
+	else
+		echo 'There is no go_info file.'
+	fi
 fi
 
 ##PULL SUBSET OF GOA LINES THAT MATCHED BLAST RESULTS INTO GOA_ENTRIES.TXT
 cyverse_blast2GO.pl "blastids.txt" "splitgoa"
+
+sed -i 's/\t/!/g' goa_entries.txt
 
 #OUTGAF VARIABLES COUNT FROM 1 TO CORRESPOND TO THE GAF FILE SPEC
 #THESE (IMMEDIATELY BELOW) WILL ALWAYS BE THE SAME AND CAN BE DECLARED OUTSIDE THE AWK STATEMENT
@@ -179,24 +246,24 @@ Database\tDB_Object_ID\tDB_Object_Symbol\tQualifier\tGO_ID\tDB_Reference\tEviden
 
 #PULLING COLUMNS FROM BLASTIDS.TXT AND GOA_ENTRIES.TXT AND PRINTING TO NEW COMBINED FILE GOCOMBO
 #PULL INFO FROM GOCOMBO_TMP.TXT  AND DECLARED VARIABLES ABOVE TO MAKE GAF OUTPUT
-awk 'BEGIN {FS = "\t"}{OFS = ","} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' blastids.txt goa_entries.txt > gocombo_tmp.txt
-sed -i 's/\t/,/g' gocombo_tmp.txt
-cat gocombo_tmp.txt | while IFS="," read -r xp unip id symbol qual goacc pmid evid empty aspect name sym prot tax date assdb empty2 empty3
+sed -i 's/\t/!/g' blastids.txt
+awk 'BEGIN {FS = "!"}{OFS = "!"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' blastids.txt goa_entries.txt > gocombo_tmp.txt
+cat gocombo_tmp.txt | while IFS="!" read -r xp unip id symbol qual goacc pmid evid empty aspect name sym prot tax date assdb empty2 empty3
 do
 	if [[ $aspect == P ]];
 		then
 		outgaf4="involved_in"
 		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $out'_goanna_gaf.tsv'
-	elif [ $aspect = F ];
+	elif [[ $aspect == F ]];
 		then
 		outgaf4="enables"
 		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $out'_goanna_gaf.tsv'
-	elif [ $aspect = C ] && grep -q $goacc '/usr/GO0032991_and_children.json';
+	elif [[ $aspect == C ]] && grep -q $goacc '/usr/GO0032991_and_children.json';
 		then
 		outgaf4="part_of"
 		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $out'_goanna_gaf.tsv'
-	elif [ $aspect = C ] && grep -v -q $goacc '/usr/GO0032991_and_children.json';
-		then 
+	elif [[ $aspect == C ]] && grep -v -q $goacc '/usr/GO0032991_and_children.json';
+		then
 		outgaf4="located_in"
 		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $out'_goanna_gaf.tsv'
 	else
@@ -215,19 +282,15 @@ then
     rm -r splitgoa
     rm gocombo_tmp.txt
     rm blstmp.txt
-    rm blastids.txt 
+    rm blastids.txt
     rm tmp.tsv
     rm tmp2.tsv
-    rm $name'.pdb'
-    rm $name'.pjs'
-    rm $name'.pos'
-    rm $name'.pot'
-    rm $name'.ptf'
-    rm $name'.pto'
     rm $name'.pog'
     rm $name'.pin'
     rm $name'.phr'
     rm $name'.psq'
+    rm $name'.psd'
+    rm $name'.psi'
 fi
 
 
