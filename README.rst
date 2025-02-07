@@ -70,6 +70,7 @@ To run the tool you need some public data. These files are now available as gzip
     [-s bitscore above which match should be kept. Default: keep all matches.]
     [-k Maximum number of gap openings allowed for match to be kept.Default: 100]
     [-l Maximum number of total gaps allowed for match to be kept. Default: 1000]
+    [-r Ratio of query length to subject length. Lengths should be comparable for match to be kept. Default: less than 1.2 so difference of up to 20% can be tolerated] 
     [-q Minimum query coverage per subject for match to be kept. Default: keep all matches]
     [-t Number of threads.  Default: 8]
     [-u 'Assigned by' field of your GAF output file. If your entry contains spaces (eg. firstname lastname)
