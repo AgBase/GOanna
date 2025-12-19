@@ -7,6 +7,7 @@ import argparse
 import os
 import re
 from sys import exit
+from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument('gaf')
@@ -29,7 +30,7 @@ gaf_df = pd.read_table(f"{gaf}", dtype=str)
 #CREATE DATAFRAME FROM OBO FILE
 stanzas = []
 current_stanza = None
-with open('constraints.obo', 'r', encoding='utf-8') as f:
+with open(outdir + '/' + 'constraints.obo', 'r', encoding='utf-8') as f:
     for line in f:
         line = line.strip()
         if line.startswith('!'):
@@ -99,7 +100,7 @@ obo_df = pd.DataFrame(data_for_df)
 #CREATE DATAFRAME FROM UNIONS OBO FILE
 stnzas = []
 current_stnza = None
-with open('unions.obo', 'r', encoding='utf-8') as file:
+with open(outdir + '/' + 'unions.obo', 'r', encoding='utf-8') as file:
     for line in file:
         line = line.strip()
         if line.startswith('!'):
@@ -263,4 +264,4 @@ gaf_obo = gaf_obo[~mask5].reset_index(drop=True)
 #REMOVE EXCESS COLUMNS FROM NEW GAF, REMOVE DUPS  AND PRINT
 new_keep_gaf.drop(['disjoint_from', 'is_a', 'is_obsolete', 'id', 'taxon_id', 'taxon_relationship'], axis=1, inplace=True)
 new_keep_gaf = new_keep_gaf.drop_duplicates()
-new_keep_gaf.to_csv("new_keep_gaf.tsv", sep='\t', header=False, index=False)
+new_keep_gaf.to_csv(outdir + '/' + "new_keep_gaf.tsv", sep='\t', header=False, index=False)

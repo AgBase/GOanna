@@ -3,7 +3,7 @@
 #######################################################################################################
 ##SET UP OPTIONS FOR MAKEBLASTDB AND BLASTP
 
-while getopts a:A:b:c:d:e:f:g:G:hk:l:m:n:o:pq:r:s:t:u:v:x:y:z option
+while getopts a:A:b:c:d:e:f:g:G:hk:l:m:n:o:O:pq:r:s:t:u:v:x:y:z option
 do
         case "${option}"
         in
@@ -19,6 +19,7 @@ do
 		G) go_info=${OPTARG};;
                 m) perc_pos=${OPTARG};;
                 o) out=${OPTARG};;
+		O) outdir=${OPTARG};;
                 s) bitscore=${OPTARG};;
                 k) gapopen=${OPTARG};;
                 l) gaps=${OPTARG};;
@@ -49,17 +50,18 @@ if [[ "$help" = "true" ]] ; then
     [-G specify 'go_info/gene_association.goa_uniprot.gz' or 'go_info/gene_association_exponly.goa_uniprot.gz'
     [-h help]
     [-m Blast percent positive identity above which match should be kept. Default: keep all matches.]
+    [-O output directory
     [-s bitscore above which match should be kept. Default: keep all matches.]
     [-k Maximum number of gap openings allowed for match to be kept.Default: 100]
     [-l Maximum number of total gaps allowed for match to be kept. Default: 1000]
     [-q Minimum query coverage per subject for match to be kept. Default: keep all matches]
     [-r Ratio of query length to subject length. Lengths should be comparable for match to be kept. Default: less than 1.2 so difference of up to 20% can be tolerated]
     [-t Number of threads.  Default: 8]
-    [-u 'Assigned by' field of your GAF output file. If your entry contains spaces (eg. firstname lastname) 
+    [-u 'Assigned by' field of your GAF output file. If your entry contains spaces (eg. firstname lastname)
         either substitute and underscore (_) or, to preserve the space, use quotes around your entry (eg. "firstname lastname")
         Default: 'user']
     [-x Taxon ID of the peptides you are blasting. Default: 'taxon:0000']
-    [-p parse_deflines. Parse query and subject bar delimited sequence identifiers]" 
+    [-p parse_deflines. Parse query and subject bar delimited sequence identifiers]"
   exit 0
 fi
 #####################################################################################################
@@ -78,7 +80,9 @@ echo -e "goinfo is:" $goinfo
 if [ -n "${E_value}" ]; then ARGS="$ARGS -evalue $E_value"; fi
 if [ -n "${max_matches}" ]; then ARGS="$ARGS -max_target_seqs $max_matches"; else ARGS="$ARGS -max_target_seqs 5"; fi
 if [ -n "${num_threads}" ]; then ARGS="$ARGS -num_threads $num_threads"; else ARGS="$ARGS -num_threads 8"; fi
+if [ -n "${outdir}" ]; then : ; else outdir='GOanna'; fi
 if [[ "$pdef" = "true" ]]; then ARGS="$ARGS -parse_deflines"; fi
+if [ ! -d $outdir ]; then mkdir -p $outdir && chmod 775 $outdir; fi
 ######################################################################################################
 
 ##CHOOSE BLAST DATABASE BASED ON WHETHER WE WANT EXPERIMENTAL ONLY OR ALL EVIDENCE CODES
@@ -104,7 +108,7 @@ then
 		echo 'database made' $(date)
 	elif [ -f "/agbase_database/$Dbase" ]
 	then
-		echo "/agbase_database/$Dbase"
+	echo "/agbase_database/$Dbase"
 		ls -l /agbase_database
 		makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
 		echo 'database made' $(date)
@@ -117,27 +121,27 @@ then
 		echo "There is no agbase_database file."
 	fi
 else
-	echo "You have specified an agbase_database file."
+	echo "You have specified an agbase_database file path."
 	name=$(basename "${agbase_db}")
 	Dbase="${agbase_db}"
 	makeblastdb -in $Dbase -dbtype prot -parse_seqids -out $name
 fi
 
 #GIVES ERRORS IF USERS TRY TO SELECT DBS THAT DON'T EXIST (BUT LOGICALLY SHOULD)
-if [ $Dbase = "viruses_exponly.fa" ]; then echo "There are too few experimentally annotated viruses to perform this search. Please try all annotations instead (-b no)."; exit; fi
-if [ $Dbase = "uniprot_sprot.fa" ]; then echo "This will search all of uniprot_sprot. To obtain high quality annotations please try experimental annotations only (-b yes)."; exit; fi
-if [ $Dbase = "uniprot_trembl.fa" ]; then echo "This will search all of uniprot_trembl. To obtain high quality annotations please try experimental annotations only ( -b yes)."; exit; fi
+if [[ $Dbase = "viruses_exponly.fa" || $name = "viruses_exponly.fa"  ]]; then echo "There are too few experimentally annotated viruses to perform this search. Please try all annotations instead."; exit; fi
+if [[ $Dbase = "uniprot_sprot.fa" || $name = "uniprot_sprot.fa" ]]; then echo "This will search all of uniprot_sprot. To obtain high quality annotations please try experimental annotations only."; exit; fi
+if [[ $Dbase = "uniprot_trembl.fa" || $name = "uniprot_trembl.fa" ]]; then echo "This will search all of uniprot_trembl. To obtain high quality annotations please try experimental annotations only."; exit; fi
 
 #RUN BLASTP
-blastp  -query $transcript_peps -db $name -out $out.asn -outfmt 11  $ARGS
+blastp  -query $transcript_peps -db $name -out $outdir/$out.asn -outfmt 11  $ARGS
 
 echo 'blastp run' $(date)
 
 ##MAKE BLAST OUTPUT FORMATS 1 AND 6
-blast_formatter -archive $out.asn -out $out.html -outfmt 0 -html
+blast_formatter -archive $outdir/$out.asn -out $outdir/$out.html -outfmt 0 -html
 echo 'html formatter run' $(date)
 
-blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score qlen slen'
+blast_formatter -archive $outdir/$out.asn -out $outdir/$out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score qlen slen'
 echo 'tsv formatter run' $(date)
 #################################################################################################################
 
@@ -150,20 +154,20 @@ if [ -z "${gaps}" ]; then gaps="1000"; fi
 if [ -z "${gapopen}" ]; then gapopen="100"; fi
 if [ -z "${ratioqs}" ]; then ratioqs="1.2"; fi
 
-awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore -v v=$gaps -v u=$gapopen -v r=$ratioqs '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w) && ($12 < v) && ($11 < u) && ($15/$16 <= r)) { print }}' $out.tsv > tmp.tsv
+awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore -v v=$gaps -v u=$gapopen -v r=$ratioqs '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w) && ($12 < v) && ($11 < u) && ($15/$16 <= r)) { print }}' $outdir/$out.tsv > $outdir/tmp.tsv
 
 ##CALCULATE QUERY AND SUBJECT LENGTH COLUMNS AND ADD THEM TO OUTPUT 6
-awk 'BEGIN { OFS = "\t" } {print $1, $3-$2, $2, $3, $4, $6-$5, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14}' tmp.tsv > tmp2.tsv
+awk 'BEGIN { OFS = "\t" } {print $1, $3-$2, $2, $3, $4, $6-$5, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14}' $outdir/tmp.tsv > $outdir/tmp2.tsv
 
 ##APPEND HEADER LINE TO OUTPUT 6
-echo -e "Query_ID\tQuery_length\tQuery_start\tQuery_end\tSubject_ID\tSubject_length\tSubject_start\tSubject_end\tE_value\tPercent_ID\tQuery_coverage\tPercent_positive_ID\tGap_openings\tTotal_gaps\tBitscore\tRaw_score" | cat - tmp2.tsv > temp && mv temp $out.tsv
+echo -e "Query_ID\tQuery_length\tQuery_start\tQuery_end\tSubject_ID\tSubject_length\tSubject_start\tSubject_end\tE_value\tPercent_ID\tQuery_coverage\tPercent_positive_ID\tGap_openings\tTotal_gaps\tBitscore\tRaw_score" | cat - $outdir/tmp2.tsv > $outdir/temp && mv $outdir/temp $outdir/$out.tsv
 
 ##################################################################################################################
 ##PULL COLUMNS 1 AND 5 (QUERY ID AND SUBJECT ID) FOR ALL LINES EXCEPT HEADER
-tail --lines=+2 $out.tsv | awk -F "\t" '{print $1, $5}' > "blstmp.txt"
+tail --lines=+2 $outdir/$out.tsv | awk -F "\t" '{print $1, $5}' > $outdir/"blstmp.txt"
 
 ##REMOVE THE _ AND EVERYTHING AFTER FROM THE SUBJECT ID SO THAT IT WILL MATCH THE GOA FILE
-awk 'BEGIN {OFS = "\t"} {sub(/_.*/, "", $2); print $1, $2}'  blstmp.txt > blastids.txt
+awk 'BEGIN {OFS = "\t"} {sub(/_.*/, "", $2); print $1, $2}'  $outdir/blstmp.txt > $outdir/blastids.txt
 
 ##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
 if [ ! -d splitgoa ]; then mkdir "splitgoa"; fi
@@ -227,7 +231,7 @@ else
 fi
 
 ##PULL SUBSET OF GOA LINES THAT MATCHED BLAST RESULTS INTO GOA_ENTRIES.TXT
-cyverse_blast2GO.pl "blastids.txt" "splitgoa"
+cyverse_blast2GO.pl $outdir/"blastids.txt" "splitgoa"
 
 sed -i 's/\t/!/g' goa_entries.txt
 
@@ -253,60 +257,62 @@ if [ -n "${gaf_taxid}" ]; then outgaf13="taxon:""$gaf_taxid"; fi
 
 #PULLING COLUMNS FROM BLASTIDS.TXT AND GOA_ENTRIES.TXT AND PRINTING TO NEW COMBINED FILE GOCOMBO
 #PULL INFO FROM GOCOMBO_TMP.TXT  AND DECLARED VARIABLES ABOVE TO MAKE GAF OUTPUT
-touch $out'_goanna_gaf.tsv'
-sed -i 's/\t/!/g' blastids.txt
-awk 'BEGIN {FS = "!"}{OFS = "!"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' blastids.txt goa_entries.txt > gocombo_tmp.txt
-cat gocombo_tmp.txt | while IFS="!" read -r xp unip id symbol qual goacc pmid evid empty aspect name sym prot tax date assdb empty2 empty3
+touch $outdir/$out'_goanna_gaf.tsv'
+sed -i 's/\t/!/g' $outdir/blastids.txt
+awk 'BEGIN {FS = "!"}{OFS = "!"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' $outdir/blastids.txt goa_entries.txt > $outdir/gocombo_tmp.txt
+cat $outdir/gocombo_tmp.txt | while IFS="!" read -r xp unip id symbol qual goacc pmid evid empty aspect name sym prot tax date assdb empty2 empty3
 do
 	if [[ $aspect == P ]];
 		then
 		outgaf4="involved_in"
-		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $out'_goanna_gaf.tsv'
+		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $outdir/$out'_goanna_gaf.tsv'
 	elif [[ $aspect == F ]];
 		then
 		outgaf4="enables"
-		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $out'_goanna_gaf.tsv'
+		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $outdir/$out'_goanna_gaf.tsv'
 	elif [[ $aspect == C ]] && grep -q $goacc '/usr/GO0032991_and_children.json';
 		then
 		outgaf4="part_of"
-		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $out'_goanna_gaf.tsv'
+		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $outdir/$out'_goanna_gaf.tsv'
 	elif [[ $aspect == C ]] && grep -v -q $goacc '/usr/GO0032991_and_children.json';
 		then
 		outgaf4="located_in"
-		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $out'_goanna_gaf.tsv'
+		echo -e "$outgaf1\t$xp\t$xp\t$outgaf4\t$goacc\t$outgaf6\t$outgaf7\t$prefix$id\t$aspect\t$xp\t$outgaf11\t$outgaf12\t$outgaf13\t$outgaf14\t$outgaf15\t$empty3\t$outgaf17" >> $outdir/$out'_goanna_gaf.tsv'
 	else
 		echo $goacc $aspect "ERROR: qualifier not set"
 	fi
 done
-cat $out'_goanna_gaf.tsv' | uniq -u > uniq.gaf
-mv uniq.gaf $out'_goanna_gaf.tsv'
+cat $outdir/$out'_goanna_gaf.tsv' | uniq -u > $outdir/uniq.gaf
+mv $outdir/uniq.gaf $outdir/$out'_goanna_gaf.tsv'
+
+ls -l $outdir
 
 #ENFORCE TAXON CONSTRAINTS
-wget https://current.geneontology.org/ontology/imports/go-computed-taxon-constraints.obo -O constraints.obo
-wget https://current.geneontology.org/ontology/imports/go-taxon-groupings.obo -O unions.obo
+wget https://current.geneontology.org/ontology/imports/go-computed-taxon-constraints.obo -O $outdir/constraints.obo
+wget https://current.geneontology.org/ontology/imports/go-taxon-groupings.obo -O $outdir/unions.obo
 
 lineage=( $(echo "${gaf_taxid}" | taxonkit lineage -t | cut -f 3 | sed  's/;/,/g') )
 
-python /usr/bin/taxon_constrain.py $out'_goanna_gaf.tsv' constraints.obo unions.obo $lineage .
+python /usr/bin/taxon_constrain.py $outdir/$out'_goanna_gaf.tsv' $outdir/constraints.obo $outdir/unions.obo $lineage $outdir
 
-mv new_keep_gaf.tsv $out'_goanna_gaf.tsv'
+mv $outdir/new_keep_gaf.tsv $outdir/$out'_goanna_gaf.tsv'
 
 ##APPEND HEADER TO GAF OUTPUT
 header="!gaf-version: 2.2\n!date-generated:$(date +'%Y-%m-%d')\n!generated-by: AgBase\n\nDatabase\tDB_Object_ID\tDB_Object_Symbol\tQualifier\tGO_ID\tDB_Reference\tEvidence_Code\tWith_From\tAspect\tDB_Object_Name\tDB_Object_Synonyms\tDB_Object_Type\tTaxon\tDate\tAssigned_By\tAnnotation_Extension\tGene_Product_Form_Id"
 
-printf "$header\n" | cat - $out'_goanna_gaf.tsv' > headergaf.tmp
-mv headergaf.tmp $out'_goanna_gaf.tsv'
+printf "$header\n" | cat - $outdir/$out'_goanna_gaf.tsv' > $outdir/headergaf.tmp
+mv $outdir/headergaf.tmp $outdir/$out'_goanna_gaf.tsv'
 
 ##REMOVE FILES THAT ARE NO LONGER NECESSARY
-if [ -s $out'_goanna_gaf.tsv' ]
+if [ -s $outdir/$out'_goanna_gaf.tsv' ]
 then
     rm goa_entries.txt
     rm -r splitgoa
-    rm gocombo_tmp.txt
-    rm blstmp.txt
-    rm blastids.txt
-    rm tmp.tsv
-    rm tmp2.tsv
+    rm $outdir/gocombo_tmp.txt
+    rm $outdir/blstmp.txt
+    rm $outdir/blastids.txt
+    rm $outdir/tmp.tsv
+    rm $outdir/tmp2.tsv
     rm $name'.pdb'
     rm $name'.pos'
     rm $name'.pot'
@@ -316,6 +322,7 @@ then
     rm $name'.pog'
     rm $name'.psq'
     rm $name'.pin'
-    rm constraints.obo
-    rm unions.obo
+    rm $outdir/constraints.obo
+    rm $outdir/unions.obo
 fi
+

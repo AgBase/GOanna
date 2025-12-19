@@ -48,16 +48,16 @@ RUN conda install -c conda-forge -c bioconda blast taxonkit && conda install pan
 ENV PATH /masterscript.sh/:$PATH
 
 # add masterscript--i added this
-ADD masterscript.sh splitB.pl cyverse_blast2GO.pl taxon_constrain.py /usr/bin/
+ADD masterscript.sh /usr/bin/
 
-#ADD splitB.pl /usr/bin
+ADD splitB.pl /usr/bin
 
-#ADD cyverse_blast2GO.pl /usr/bin
+ADD cyverse_blast2GO.pl /usr/bin
 
-#ADD taxon_constrain.py /usr/bin
+ADD taxon_constrain.py /usr/bin
 
 # Change the permissions and the path for the wrapper script
-RUN chmod +x /usr/bin/masterscript.sh /usr/bin/taxon_constrain.py
+RUN chmod +x /usr/bin/masterscript.sh /usr/bin/taxon_constrain.py /usr/bin/splitB.pl /usr/bin/cyverse_blast2GO.pl
 
 RUN mkdir -p /work-dir /agbase_database /go_info
 
