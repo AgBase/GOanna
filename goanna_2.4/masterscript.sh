@@ -98,24 +98,24 @@ then
 	then
 		echo "/agbase_database/$Dbase.gz"
 		gunzip /agbase_database/$Dbase.gz
-		makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
+		makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $outdir/$name
 		echo 'database made' $(date)
 	elif [ -f "agbase_database/$Dbase.gz" ]
 	then
 		echo "agbase_database/$Dbase.gz"
 		gunzip "agbase_database/$Dbase.gz"
-		makeblastdb -in agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
+		makeblastdb -in agbase_database/$Dbase -dbtype prot -parse_seqids -out $outdir/$name
 		echo 'database made' $(date)
 	elif [ -f "/agbase_database/$Dbase" ]
 	then
 	echo "/agbase_database/$Dbase"
 		ls -l /agbase_database
-		makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
+		makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $outdir/$name
 		echo 'database made' $(date)
 	elif [ -f "agbase_database/$Dbase" ]
 	then
 		echo "agbase_database/$Dbase"
-		makeblastdb -in agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
+		makeblastdb -in agbase_database/$Dbase -dbtype prot -parse_seqids -out $outdir/$name
 		echo 'database made' $(date)
 	else
 		echo "There is no agbase_database file."
@@ -124,7 +124,7 @@ else
 	echo "You have specified an agbase_database file path."
 	name=$(basename "${agbase_db}")
 	Dbase="${agbase_db}"
-	makeblastdb -in $Dbase -dbtype prot -parse_seqids -out $name
+	makeblastdb -in $Dbase -dbtype prot -parse_seqids -out $outdir/$name
 fi
 
 #GIVES ERRORS IF USERS TRY TO SELECT DBS THAT DON'T EXIST (BUT LOGICALLY SHOULD)
@@ -133,7 +133,7 @@ if [[ $Dbase = "uniprot_sprot.fa" || $name = "uniprot_sprot.fa" ]]; then echo "T
 if [[ $Dbase = "uniprot_trembl.fa" || $name = "uniprot_trembl.fa" ]]; then echo "This will search all of uniprot_trembl. To obtain high quality annotations please try experimental annotations only."; exit; fi
 
 #RUN BLASTP
-blastp  -query $transcript_peps -db $name -out $outdir/$out.asn -outfmt 11  $ARGS
+blastp  -query $transcript_peps -db $outdir/$name -out $outdir/$out.asn -outfmt 11  $ARGS
 
 echo 'blastp run' $(date)
 
@@ -313,16 +313,15 @@ then
     rm $outdir/blastids.txt
     rm $outdir/tmp.tsv
     rm $outdir/tmp2.tsv
-    rm $name'.pdb'
-    rm $name'.pos'
-    rm $name'.pot'
-    rm $name'.ptf'
-    rm $name'.pto'
-    rm $name'.phr'
-    rm $name'.pog'
-    rm $name'.psq'
-    rm $name'.pin'
+    rm $outdir/$name'.pdb'
+    rm $outdir/$name'.pos'
+    rm $outdir/$name'.pot'
+    rm $outdir/$name'.ptf'
+    rm $outdir/$name'.pto'
+    rm $outdir/$name'.phr'
+    rm $outdir/$name'.pog'
+    rm $outdir/$name'.psq'
+    rm $outdir/$name'.pin'
     rm $outdir/constraints.obo
     rm $outdir/unions.obo
 fi
-
