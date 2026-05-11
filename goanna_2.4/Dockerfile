@@ -47,9 +47,9 @@ RUN conda install -c conda-forge -c bioconda blast taxonkit && conda install pan
 
 ENV PATH /masterscript.sh/:$PATH
 
-RUN mkdir -p ~/.taxonkit
+RUN mkdir -p /.taxonkit
 
-WORKDIR ~/.taxonkit
+WORKDIR /.taxonkit
 
 RUN wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz && \
     tar -xvzf taxdump.tar.gz
